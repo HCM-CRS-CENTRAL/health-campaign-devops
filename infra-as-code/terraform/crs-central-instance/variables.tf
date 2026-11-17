@@ -68,3 +68,13 @@ DB password must:
 EOT
   }
 }
+variable "client_id" {
+  description = "Client ID of the service principal the AKS cluster runs as (e.g. the deployment SP). Pass via TF_VAR_aks_sp_client_id or terraform.tfvars."
+  type        = string
+}
+
+variable "client_secret" {
+  description = "Client secret for aks_sp_client_id. Pass via TF_VAR_aks_sp_client_secret; never commit it."
+  type        = string
+  sensitive   = true
+}

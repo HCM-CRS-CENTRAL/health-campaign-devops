@@ -1,4 +1,8 @@
 # creation rules are evaluated sequentially, the first match wins
 creation_rules:
-  - path_regex: environments/dhis2\-secrets\.yaml$
-    azure_keyvault: 'https://hcm-demo-kv.vault.azure.net/keys/sops-key/bd08e4ad057e40f790edcaae471b5959'
+  # Helm values secrets, decrypted by argocd-repo-server via helm-secrets (secrets://).
+  # Also holds the repo-server's own Azure creds (cluster-configs.secrets.argocd-azure-creds),
+  # bootstrapped by helm/charts/argo-cd/bootstrap/create-argocd-sops-creds.sh.
+  # With an az CLI login, export AZURE_ADDITIONALLY_ALLOWED_TENANTS=<tenant-id> before sops.
+  - path_regex: 'environments/crs-central-instance-secrets.yaml'
+    azure_keyvault: 'https://crs-central-instance.vault.azure.net/keys/crs-central-instance-vault-key/aeaeaefe6e1143069955181ef3c323a9'

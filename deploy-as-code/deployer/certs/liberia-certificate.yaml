@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: liberia-hcm.digit.org-tls-certs
+  namespace: egov
+spec:
+  secretName: liberia-hcm.digit.org-tls-certs
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: liberia-hcm.digit.org
+  dnsNames:
+    - liberia-hcm.digit.org

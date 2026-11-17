@@ -21,3 +21,27 @@ variable "max_node_count" {
   type        = number
   default     = 10
 }
+variable "oidc_issuer_enabled" {
+  description = "Enable the OIDC issuer (required for workload identity)"
+  type        = bool
+  default     = false
+}
+
+variable "workload_identity_enabled" {
+  description = "Enable Microsoft Entra Workload Identity (requires oidc_issuer_enabled)"
+  type        = bool
+  default     = false
+}
+
+variable "service_principal_client_id" {
+  description = "Client ID of a service principal to run the cluster as. null (default) = system-assigned managed identity."
+  type        = string
+  default     = null
+}
+
+variable "service_principal_client_secret" {
+  description = "Client secret for service_principal_client_id."
+  type        = string
+  default     = null
+  sensitive   = true
+}

@@ -42,7 +42,7 @@ crds:
 global:
   # -- Default domain used by all components
   ## Used for ingresses, certificates, SSO, notifications, etc.
-  domain: health-demo.digit.org
+  domain: crs-central-instance.digit.org
 
   # -- Runtime class name for all components
   runtimeClassName: ""
@@ -2886,17 +2886,17 @@ repoServer:
     - name: AZURE_CLIENT_ID
       valueFrom:
         secretKeyRef:
-          name: argocd-rs-hcm-demo-azure-creds
+          name: argocd-rs-crs-central-instance-azure-creds
           key: client-id
     - name: AZURE_TENANT_ID
       valueFrom:
         secretKeyRef:
-          name: argocd-rs-hcm-demo-azure-creds
+          name: argocd-rs-crs-central-instance-azure-creds
           key: tenant-id
     - name: AZURE_CLIENT_SECRET
       valueFrom:
         secretKeyRef:
-          name: argocd-rs-hcm-demo-azure-creds
+          name: argocd-rs-crs-central-instance-azure-creds
           key: client-secret
 
   # -- envFrom to pass to repo server

@@ -1,56 +1,118 @@
+## Backbone services for the CRS central instance.
+## Modelled on DIGIT-DevOps unified-dev backbone-app-set-backbone.yaml.
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: who-afro-backbone-appset
+  name: crs-central-backbone-appset-backbone
   namespace: argocd
-
 spec:
   generators:
-    - git:
-        repoURL: git@github.com:HCM-WHO-AFRO/health-campaign-devops.git
-        revision: azure-install-who-test
-        directories:
-          - path: config-as-code/helm/charts/backbone-used-charts/*
+    - list:
+        # This generator is not goTemplate-enabled, so EVERY element must set all
+        # of chartPath / valuesFile / namespace -- a missing key renders literally
+        # as `{{key}}`.
+        #
+        # chartPath: charts under backbone-used-charts/ are the env-tuned copies
+        #   (fullnameOverride release-name-* matches the hostnames in
+        #   crs-central-instance.yaml, e.g. release-name-kafka-controller-headless.kafka-kraft
+        #   and release-name-kibana.es-cluster). The rest come from backbone-services/.
+        # valuesFile: elasticsearch is one chart with a values file per node group.
+        # namespace: where the chart actually renders its resources (see
+        #   backbone-app-project.yaml) -- keep these in sync with the env file hosts.
+        # releaseName: Helm release name. ingress-nginx uses `release-name` because it was
+        #   first installed from `helm template` output (selector instance=release-name);
+        #   Deployment selectors are immutable, so any other name fails to sync and
+        #   recreating it would also change the LoadBalancer IP the DNS points at.
+        elements:
+          - name: ingress-nginx
+            chartPath: backbone-services/ingress-nginx
+            valuesFile: values.yaml
+            namespace: egov
+            releaseName: release-name
+          - name: cert-manager
+            chartPath: backbone-services/cert-manager
+            valuesFile: values.yaml
+            namespace: egov
+            releaseName: cert-manager
+          - name: redis
+            chartPath: backbone-used-charts/redis
+            valuesFile: values.yaml
+            namespace: backbone
+            releaseName: redis
+          - name: kafka-kraft
+            chartPath: backbone-used-charts/kafka-kraft
+            valuesFile: values.yaml
+            namespace: kafka-kraft
+            releaseName: kafka-kraft
+          - name: elasticsearch-master
+            chartPath: backbone-services/elasticsearch
+            valuesFile: elasticsearch-master-values.yaml
+            namespace: es-cluster
+            releaseName: elasticsearch-master
+          - name: elasticsearch-data
+            chartPath: backbone-services/elasticsearch
+            valuesFile: elasticsearch-data-values.yaml
+            namespace: es-cluster
+            releaseName: elasticsearch-data
+          - name: kibana
+            chartPath: backbone-used-charts/kibana
+            valuesFile: values.yaml
+            namespace: es-cluster
+            releaseName: kibana
+          - name: oauth2-proxy
+            chartPath: backbone-used-charts/oauth2-proxy
+            valuesFile: values.yaml
+            namespace: egov
+            releaseName: oauth2-proxy
 
   template:
     metadata:
-      name: 'backbone-{{path.basename}}'
+      name: 'backbone-{{name}}'
+      annotations:
+        # Diff-only: changes how drift is detected, never what is applied.
+        argocd.argoproj.io/compare-options: ServerSideDiff=true
 
     spec:
       project: backbone-project
 
       source:
-        repoURL: git@github.com:HCM-WHO-AFRO/health-campaign-devops.git
-        targetRevision: azure-install-who-test
-        path: '{{path}}'
-
+        repoURL: git@github.com:HCM-CRS-CENTRAL/health-campaign-devops.git
+        targetRevision: crs-central-instance
+        path: config-as-code/helm/charts/{{chartPath}}
         helm:
+          # Per element (see generator comment) instead of the default `backbone-<name>`.
+          releaseName: '{{releaseName}}'
           valueFiles:
-            - values.yaml
-            - ../../../../environments/who-afro-hcm.yaml
+            - '{{valuesFile}}'
+            - ../../../../environments/crs-central-instance.yaml
 
       destination:
         server: https://kubernetes.default.svc
-        namespace: default
+        namespace: '{{namespace}}'
+
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true
+        syncOptions:
+          - ApplyOutOfSyncOnly=true
+          - ServerSideApply=true
+          - CreateNamespace=true
+          # Lets cert-manager's ClusterIssuers pass dry-run before its CRDs exist.
+          - SkipDryRunOnMissingResource=true
+        retry:
+          limit: 10
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m0s
 
       ignoreDifferences:
         - group: apps
           kind: Deployment
           jsonPointers:
             - /spec/replicas
-
-      syncPolicy:
-        automated:
-          prune: false
-          selfHeal: true
-
-        syncOptions:
-          - ApplyOutOfSyncOnly=true
-          - ServerSideApply=true
-
-        retry:
-          limit: 10
-          backoff:
-            duration: 5s
-            factor: 2
-            maxDuration: 3m
+        - group: apps
+          kind: StatefulSet
+          jsonPointers:
+            - /spec/replicas

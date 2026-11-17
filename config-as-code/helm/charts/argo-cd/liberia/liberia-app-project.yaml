@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: liberia-project
+  namespace: argocd
+spec:
+  sourceRepos:
+    - git@github.com:HCM-CRS-CENTRAL/health-campaign-devops.git
+
+  destinations:
+    - namespace: liberia
+      server: https://kubernetes.default.svc
+    # health-expense-calculator ingress is rendered into egov (chart default ingress.namespace)
+    - namespace: egov
+      server: https://kubernetes.default.svc

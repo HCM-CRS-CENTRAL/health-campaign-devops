@@ -1,0 +1,55 @@
+## Playground utilities (playground pod, pgadmin) for the CRS central instance.
+## Modelled on DIGIT-DevOps unified-dev backbone-app-set-playground.yaml.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: crs-central-backbone-appset-playground
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - name: playground
+            chartPath: backbone-services/playground
+          - name: pgadmin
+            chartPath: backbone-used-charts/pgadmin
+
+  template:
+    metadata:
+      name: 'backbone-{{name}}'
+
+    spec:
+      project: backbone-project
+
+      source:
+        repoURL: git@github.com:HCM-CRS-CENTRAL/health-campaign-devops.git
+        targetRevision: crs-central-instance
+        path: config-as-code/helm/charts/{{chartPath}}
+        helm:
+          valueFiles:
+            - values.yaml
+            - ../../../../environments/crs-central-instance.yaml
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'playground'
+
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true
+        syncOptions:
+          - ApplyOutOfSyncOnly=true
+          - ServerSideApply=true
+        retry:
+          limit: 10
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m0s
+
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /spec/replicas

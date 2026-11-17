@@ -463,4 +463,4 @@ env: |
   - name: TRACER_KAFKA_MDC_ENABLED
     value: {{ index .Values "kafka-mdc-enabled" | quote }}
   - name: TRANSFORMER_ERROR_TOPIC
-    value: demo-transformer-error-topic
+    value: {{ index .Values "transformer-error-topic" | default "demo-transformer-error-topic" | quote }}

@@ -30,15 +30,14 @@ resource "azurerm_subnet" "aks" {
   address_prefixes   = ["10.20.27.0/25"]  # 128 IPs for AKS
 }
 
-# Give AKS system-assigned identity permission to join the subnet
-# This will be created by the service principal with User Access Administrator role
-# resource "azurerm_role_assignment" "aks_subnet_network_contributor" {
-#   principal_id         = module.kubernetes.aks_principal_id
-#   role_definition_name = "Network Contributor"
-#   scope                = azurerm_subnet.aks.id
-
-#   depends_on = [module.kubernetes]
-# }
+# The AKS cluster runs as a service principal (var.aks_sp_client_id), like the Togo envs,
+# instead of a system-assigned managed identity. That SP already has Contributor and
+# Network Contributor on the subscription, so the cloud provider can join the AKS subnet
+# in this VNet when creating LoadBalancer services -- no extra role assignment needed
+# (our deployment SP cannot create role assignments).
+# If you switch back to a managed identity, the identity needs "Network Contributor" on
+# azurerm_subnet.aks, granted by someone with roleAssignments/write:
+#   LinkedAuthorizationFailed ... Microsoft.Network/virtualNetworks/subnets/join/action
 
 resource "azurerm_subnet" "postgres" {
   name         = "snet-postgres-crs-central-instance-01"  # Following naming convention
@@ -104,13 +103,21 @@ module "kubernetes" {
   name                      = var.environment
   location                  = var.location
   resource_group            = var.resource_group
-  vm_size                   = "Standard_D2s_v3"
+  vm_size                   = "Standard_A4m_v2"
   node_count                = 4
   vnet_subnet_id            = azurerm_subnet.aks.id
   os_disk_size_gb           = 64
   enable_auto_scaling       = false
   min_node_count            = 1
   max_node_count            = 12
+  # Enabled on the live cluster (workload identity); keep Terraform in sync so a plan
+  # does not try to turn them off.
+  oidc_issuer_enabled       = true
+  workload_identity_enabled = true
+  # Run the cluster as a service principal (see note above the postgres subnet).
+  # Changing this between SP and managed identity recreates the cluster.
+  service_principal_client_id     = var.client_id
+  service_principal_client_secret = var.client_secret
 }
 
 module "postgres-db" {

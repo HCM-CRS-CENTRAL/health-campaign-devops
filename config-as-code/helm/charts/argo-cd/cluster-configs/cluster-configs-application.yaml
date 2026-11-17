@@ -1,35 +1,55 @@
+## cluster-configs for the CRS central instance -- the only Application that uses
+## the secrets:// scheme.
+## Modelled on DIGIT-DevOps unified-dev cluster-configs-application.yaml.
+##
+## Renders: all namespaces (incl. tenant namespaces such as `liberia`), the
+## egov-config / egov-service-host ConfigMaps and shared Secrets in every tenant
+## namespace, cluster roles and the root ingress.
+##
+## valueFiles resolve relative to spec.sources[].path (config-as-code/helm/charts/cluster-configs),
+## i.e. ../../../environments/<env>.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: hcm-demo-cluster-configs
+  name: cluster-configs-crs-central-instance
   namespace: argocd
 spec:
   project: cluster-configs-project
   sources:
-    - repoURL: git@github.com:egovernments/health-campaign-devops.git
-      targetRevision: azure-install-hcm-demo
+    - repoURL: git@github.com:HCM-CRS-CENTRAL/health-campaign-devops.git
+      targetRevision: crs-central-instance
       path: "config-as-code/helm/charts/cluster-configs"
       helm:
         valueFiles:
           - values.yaml
-          - ../../../environments/hcm-demo-azure.yaml
-          - secrets://../../../environments/hcm-demo-azure-secrets.yaml
+          - ../../../environments/crs-central-instance.yaml
+          ## secrets:// is decrypted by argocd-repo-server via helm-secrets + SOPS
+          ## using the Azure Key Vault key in config-as-code/.sops.yaml. The repo-server
+          ## needs Azure credentials with decrypt permission on that key.
+          - secrets://../../../environments/crs-central-instance-secrets.yaml
   destination:
     server: https://kubernetes.default.svc
+
   ignoreDifferences:
     - group: apps
       kind: Deployment
       jsonPointers:
         - /spec/replicas
+
   syncPolicy:
     automated:
-      prune: true
+      ## prune stays off: this Application owns Namespaces, and pruning one deletes
+      ## everything inside it.
+      prune: false
       selfHeal: true
     syncOptions:
       - ApplyOutOfSyncOnly=true
       - ServerSideApply=true
+      ## Certificates (cert-manager.io) can be synced before cert-manager's CRDs exist;
+      ## they apply on a later retry/self-heal once backbone-cert-manager is up.
+      - SkipDryRunOnMissingResource=true
     retry:
-      limit: 100
+      limit: 10
       backoff:
         duration: 5s
         factor: 2

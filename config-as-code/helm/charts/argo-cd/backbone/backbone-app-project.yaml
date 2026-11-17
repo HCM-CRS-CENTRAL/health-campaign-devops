@@ -1,12 +1,73 @@
+## AppProject for the backbone services of the CRS central instance (Azure AKS).
+## Modelled on DIGIT-DevOps unified-dev (deploy-as-code/helm/charts/argo-cd/unified-dev/backbone).
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
   name: backbone-project
   namespace: argocd
 spec:
+  description: Backbone services for the CRS central instance (Azure AKS)
   sourceRepos:
-    - git@github.com:HCM-WHO-AFRO/health-campaign-devops.git
+    - git@github.com:HCM-CRS-CENTRAL/health-campaign-devops.git
 
+  ## The backbone charts in this repo pin their own namespaces (they do not follow
+  ## the Application's destination namespace), so every namespace they render into
+  ## must be listed here:
+  ##   ingress-nginx  -> egov       (chart values: namespaceOverride: egov)
+  ##   cert-manager   -> egov, kube-system (leader-election Role/RoleBinding)
+  ##   oauth2-proxy   -> egov
+  ##   redis          -> backbone
+  ##   kafka-kraft    -> kafka-kraft
+  ##   elasticsearch-master / elasticsearch-data / kibana -> es-cluster
+  ##   playground / pgadmin -> playground
   destinations:
-    - namespace: '*'
+    - namespace: 'backbone'
       server: https://kubernetes.default.svc
+    - namespace: 'egov'
+      server: https://kubernetes.default.svc
+    - namespace: 'kube-system'
+      server: https://kubernetes.default.svc
+    - namespace: 'kafka-kraft'
+      server: https://kubernetes.default.svc
+    - namespace: 'es-cluster'
+      server: https://kubernetes.default.svc
+    - namespace: 'playground'
+      server: https://kubernetes.default.svc
+
+  ## Cluster-scoped objects rendered by the backbone charts. An AppProject with no
+  ## clusterResourceWhitelist permits none of them and the Applications fail with
+  ## "one or more synchronization tasks are not valid".
+  ##
+  ##   ingress-nginx  ClusterRole, ClusterRoleBinding, IngressClass,
+  ##                  ValidatingWebhookConfiguration
+  ##   cert-manager   ClusterRole, ClusterRoleBinding, Mutating/ValidatingWebhookConfiguration,
+  ##                  CustomResourceDefinition (chart crds/ dir) and ClusterIssuer
+  ##   elasticsearch-master / elasticsearch-data
+  ##                  PersistentVolume (static Azure managed disks from the env file)
+  ##
+  ## Namespace is listed because the Applications use CreateNamespace=true.
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: ''
+      kind: PersistentVolume
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+    - group: networking.k8s.io
+      kind: IngressClass
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+    - group: cert-manager.io
+      kind: ClusterIssuer
+
+  ## Left as "*": these charts render a wide spread of namespaced kinds, and
+  ## enumerating them invites a sync failure the first time a chart adds one.
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'

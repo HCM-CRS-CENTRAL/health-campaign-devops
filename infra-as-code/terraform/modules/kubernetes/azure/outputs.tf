@@ -1,6 +1,6 @@
 output "aks_principal_id" {
-  value       = azurerm_kubernetes_cluster.aks.identity[0].principal_id
-  description = "The principal ID of the AKS cluster's managed identity"
+  value       = try(azurerm_kubernetes_cluster.aks.identity[0].principal_id, null)
+  description = "The principal ID of the AKS cluster's managed identity (null when the cluster runs as a service principal)"
 }
 
 output "cluster_name" {
