@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: hcm-demo-egov-appset-health
+  name: crs-central-egov-appset-health
   namespace: argocd
 spec:
   generators:
@@ -35,13 +35,13 @@ spec:
       project: egov-project
 
       source:
-        repoURL: git@github.com:egovernments/health-campaign-devops.git
-        targetRevision: azure-install-hcm-demo
+        repoURL: git@github.com:HCM-CRS-CENTRAL/health-campaign-devops.git
+        targetRevision: crs-central-instance
         path: config-as-code/helm/charts/health-services/{{name}}
         helm:
           valueFiles:
             - values.yaml
-            - ../../../../environments/hcm-demo-azure.yaml
+            - ../../../../environments/crs-central-instance.yaml
       destination:
         server: https://kubernetes.default.svc
         namespace: '*'

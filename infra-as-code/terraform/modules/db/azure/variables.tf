@@ -14,3 +14,8 @@ variable "auto_grow_enabled" {
   type        = bool
   default     = false
 }
+variable "db_name" {
+  description = "Name of the application database. Defaults to \"<environment>-db\" when null."
+  type        = string
+  default     = null
+}

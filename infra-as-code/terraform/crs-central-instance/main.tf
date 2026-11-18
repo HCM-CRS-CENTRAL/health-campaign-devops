@@ -131,6 +131,7 @@ module "postgres-db" {
   administrator_login       = var.db_user
   administrator_password    = var.db_password
   db_version                = var.db_version
+  db_name                   = "crscentralinstance"
   delegated_subnet_id       = azurerm_subnet.postgres.id
   private_dns_zone_id       = azurerm_private_dns_zone.db.id
   auto_grow_enabled         = true
