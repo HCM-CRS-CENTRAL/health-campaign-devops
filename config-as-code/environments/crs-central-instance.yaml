@@ -1613,13 +1613,12 @@ elasticsearch-data:
     persistence:
         enabled: true
         dataDirSize: "50Gi"
-        azure:
-            - diskName: "es-data-disk-0"
-              diskUri: "/subscriptions/f07cf9be-deef-46d7-b025-fd11d032da4f/resourceGroups/crs-central-instance-rg/providers/Microsoft.Compute/disks/es-data-disk-0"
-            - diskName: "es-data-disk-1"
-              diskUri: "/subscriptions/f07cf9be-deef-46d7-b025-fd11d032da4f/resourceGroups/crs-central-instance-rg/providers/Microsoft.Compute/disks/es-data-disk-1"
-            - diskName: "es-data-disk-2"
-              diskUri: "/subscriptions/f07cf9be-deef-46d7-b025-fd11d032da4f/resourceGroups/crs-central-instance-rg/providers/Microsoft.Compute/disks/es-data-disk-2"
+    volumeClaimTemplate:
+        storageClassName: default
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+            requests:
+                storage: 50Gi
 
     esJavaOpts: "-Xmx2000M -Xms2000M"
     resources:
@@ -1636,14 +1635,13 @@ elasticsearch-master:
         tag: 8.11.3
     persistence:
         enabled: true
-        dataDirSize: "20Gi"
-        azure:
-            - diskName: "es-master-disk-0"
-              diskUri: "/subscriptions/f07cf9be-deef-46d7-b025-fd11d032da4f/resourceGroups/crs-central-instance-rg/providers/Microsoft.Compute/disks/es-master-disk-0"
-            - diskName: "es-master-disk-1"
-              diskUri: "/subscriptions/f07cf9be-deef-46d7-b025-fd11d032da4f/resourceGroups/crs-central-instance-rg/providers/Microsoft.Compute/disks/es-master-disk-1"
-            - diskName: "es-master-disk-2"
-              diskUri: "/subscriptions/f07cf9be-deef-46d7-b025-fd11d032da4f/resourceGroups/crs-central-instance-rg/providers/Microsoft.Compute/disks/es-master-disk-2" 
+        dataDirSize: "10Gi"
+    volumeClaimTemplate:
+        storageClassName: default
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+            requests:
+                storage: 10Gi
 
 
     esJavaOpts: "-Xmx448m -Xms448m"
@@ -1667,7 +1665,7 @@ pgadmin:
   persistence:
     enabled: true
     dataDirSize: "1Gi"
-    storageClassName: gp3
+    storageClassName: default
     # aws:
     #   volumeId: "vol-077afc8a5f0c9fcb8"
     #   zone: ap-south-1b
@@ -1741,7 +1739,7 @@ prometheus:
   storageSpec:
     volumeClaimTemplate:
       spec:
-        storageClassName: gp3
+        storageClassName: default
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
