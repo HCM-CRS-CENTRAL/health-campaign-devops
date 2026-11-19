@@ -66,28 +66,16 @@ env: |
     valueFrom:
       configMapKeyRef:
         name: egov-service-host
-        key: egov-mdms-service
-  - name: EGOV_MDMS_SEARCH_ENDPOINT
-    value: "/mdms-v2/v1/_search"
-  - name: EGOV_MDMS_PATH
-    value: "/mdms-v2/v1/_search"
-  - name: MDMS_PATH
-    value: "/mdms-v2/v1/_search"
+        key: mdms-v2
   - name: EGOV_LOCALIZATION_HOST
     valueFrom:
       configMapKeyRef:
         name: egov-service-host
         key: egov-localization
   - name: EGOV_INFRA_SEARCHER_HOST
-    valueFrom:
-      configMapKeyRef:
-        name: egov-service-host
-        key: egov-searcher
+    value: ""
   - name: EGOV_COMMON_MASTERS_HOST
-    valueFrom:
-      configMapKeyRef:
-        name: egov-service-host
-        key: egov-common-masters
+    value: ""
   - name: EGOV_FILESTORE_HOST
     valueFrom:
       configMapKeyRef:
@@ -103,6 +91,8 @@ env: |
       configMapKeyRef:
         name: egov-service-host
         key: egov-user
+  - name: EGOV_MDMS_SEARCH_ENDPOINT
+    value: "/mdms-v2/v1/_search"
   - name: PGR_KAFKA_CREATE_TOPIC
     value: "save-pgr-request"
   - name: PGR_KAFKA_UPDATE_TOPIC
@@ -130,7 +120,7 @@ env: |
   - name: COMMENT_BY_EMPLOYEE_NOTIF_ENABLED
     value: {{ index .Values "comment-by-employee-notif-enabled" | quote }}
   - name: EGOV_PGR_APP_PLAYSTORE_LINK
-    value: ""
+    value: "https://goo.gl/ArDyQ1"
   - name: NOTIFICATION_ALLOWED_ON_STATUS
     value: {{ index .Values "notification-allowed-status" | quote }}
   - name: EGOV_HRMS_HOST
@@ -149,17 +139,14 @@ env: |
     value: {{ index .Values "heap" | quote }}
   - name: JAVA_ARGS
     value: {{ index .Values "java-args" | quote }}
+  - name: JAVA_ENABLE_DEBUG
+    value: {{ index .Values "java-enable-debug" | quote }}
   - name: SERVER_PORT
     value: "8080"
   - name: SECURITY_BASIC_ENABLED
     value: "false"  
   - name: MANAGEMENT_SECURITY_ENABLED
     value: "false" 
-  - name: EGOV_LOCATION_HOST
-    valueFrom:
-      configMapKeyRef:
-        name: egov-service-host
-        key: egov-location
   - name: EGOV_USR_EVENTS_NOTIFICATION_ENABLED
     value: "false"
   - name: EGOV_USR_EVENTS_CREATE_TOPIC
@@ -185,6 +172,8 @@ env: |
   - name: PGR_COMPLAIN_IDLE_TIME
     value: {{ index .Values "time-before-closing-complaint" | quote }} 
   {{- end }}
+  - name: PGR_KAFKA_TENANT_ID_PATTERN
+    value: "liberia-"
 
 
   

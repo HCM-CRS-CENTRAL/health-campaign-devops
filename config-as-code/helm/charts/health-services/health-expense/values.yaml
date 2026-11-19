@@ -1,6 +1,6 @@
 # Common Labels
 labels:
-  app: "expense"
+  app: "health-expense"
   group: "health"
 
 namespace: egov
@@ -11,6 +11,8 @@ ingress:
   enabled: true
   zuul: true
   context: "health-expense"
+  additionalAnnotations: |
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
 
 # Init Containers Configs
 initContainers:
@@ -29,6 +31,8 @@ healthChecks:
   livenessProbePath: "/health-expense/health"
   readinessProbePath: "/health-expense/health"
 appType: "java-spring"
+hpa:
+  enabled: false
 tracing-enabled: true
 heap: "-Xmx256m -Xms256m"
 memory_limits: 512Mi
@@ -38,6 +42,21 @@ cpu_limits: "300m"
 expense-billing-bill-create: expense-bill-create-health
 expense-billing-bill-update: expense-bill-update-health
 report-generation-trigger-topic: report-generation-trigger
+expense-billing-bill-detail-create: expense-bill-detail-create
+expense-billing-bill-detail-update: expense-bill-detail-update
+expense-bill-task: expense-bill-task
+expense-bill-task-details: expense-bill-task-details
+expense-task-status-update: expense-task-status-update
+expense-task-details-update: expense-task-details-update
+expense-billing-payment-create: expense-payment-create
+expense-billing-payment-update: expense-payment-update
+expense-bill-report-save: expense-bill-report-save
+expense-bill-report-update: expense-bill-report-update
+kafka-topics-consumer: expense-billing-consumer-topic
+expense-billing-default-limit: "100"
+expense-billing-search-max-limit: "200"
+spring-kafka-producer-properties-max-request-size: "10485760"
+egov-mdms-v2-search-endpoint: "/mdms-v2/v1/_search"
 
 # Additional Container Envs
 env: |
@@ -106,16 +125,18 @@ env: |
     value: "egov.core.notification.sms"
   {{- if index .Values "expense-billing-default-offset" }}
   - name: EXPENSE_BILLING_DEFAULT_OFFSET
-    value: {{ index .Values "expense-billing-default-offset" | quote }}
+    value: {{ index .Values "expense-billing-default-offset" | quote }} 
   {{- end }}
   {{- if index .Values "expense-billing-default-limit" }}
   - name: EXPENSE_BILLING_DEFAULT_LIMIT
-    value: {{ index .Values "expense-billing-default-limit" | quote }}
+    value: {{ index .Values "expense-billing-default-limit" | quote }} 
   {{- end }}
   {{- if index .Values "expense-billing-search-max-limit" }}
   - name: EXPENSE_BILLING_SEARCH_MAX_LIMIT
     value: {{ index .Values "expense-billing-search-max-limit" | quote }}
   {{- end }}
+  - name: WF_TRANSITION_RETRY_MAX_ATTEMPTS
+    value: {{ index .Values "wf-transition-retry-max-attempts" | default "20" | quote }}
   - name: WORKS_PROJECT_HOST
     valueFrom:
       configMapKeyRef:
@@ -130,23 +151,31 @@ env: |
         key: redis-host
   {{- if index .Values "spring-kafka-producer-properties-max-request-size" }}
   - name: SPRING_KAFKA_PRODUCER_PROPERTIES_MAX_REQUEST_SIZE
-    value: {{ index .Values "spring-kafka-producer-properties-max-request-size" | quote }}
+    value: {{ index .Values "spring-kafka-producer-properties-max-request-size" | quote }} 
   {{- end }}
   {{- if index .Values "egov-mdms-v2-search-endpoint" }}
   - name: EGOV_MDMS_V2_SEARCH_ENDPOINT
-    value: {{ index .Values "egov-mdms-v2-search-endpoint" | quote }}
+    value: {{ index .Values "egov-mdms-v2-search-endpoint" | quote }} 
   {{- end }}
   - name: IS_HEALTH_CONTEXT_ENABLED
     value: "true"
   - name: EXPENSE_V2_PERIODIC_BILLING_ENABLED
     value: {{ index .Values "expense-v2-periodic-billing-enabled" | default "false" | quote }}
   - name: EXPENSE_KAFKA_TENANT_ID_PATTERN
+  {{- if hasKey .Values "expense-kafka-tenant-id-pattern" }}
+    value: {{ index .Values "expense-kafka-tenant-id-pattern" | quote }}
+  {{- else }}
     valueFrom:
       configMapKeyRef:
         name: egov-config
         key: kafka-tenant-id-pattern
+  {{- end }}
+  {{- if hasKey .Values "expense-bill-signature-required-actions" }}
+  - name: EXPENSE_BILL_SIGNATURE_REQUIRED_ACTIONS
+    value: {{ index .Values "expense-bill-signature-required-actions" | quote }}
+  {{- end }}
   - name: TASK_SCHEDULER-BOOTSTRAP_TENANTS
-    value: {{ index .Values "task-scheduler-bootstrap-tenants" | default "demo" | quote}}
+    value: {{ index .Values "task-scheduler-bootstrap-tenants" | default "mz" | quote}}
   - name: WORKS_WORKER_REGISTRY_HOST
     valueFrom:
       configMapKeyRef:
@@ -164,37 +193,33 @@ env: |
   - name: MTN_API_MOCK_ENABLED
     value: {{ index .Values "mtn-api-mock-enabled" | default "true" | quote }}
   - name: TASK_SCHEDULER_BOOTSTRAP_TENANTS
-    value: {{ index .Values "task-scheduler-bootstrap-tenants" | default "demo" | quote}}
+    value: {{ index .Values "task-scheduler-bootstrap-tenants" | default "ba" | quote}}
   - name: REPORT_GENERATION_TRIGGER_TOPIC
     value: {{ index .Values "report-generation-trigger-topic" | quote}}
   - name: EXPENSE_BILLING_BILL_DETAIL_CREATE
-    value: "expense-bill-detail-create"
+    value: {{ index .Values "expense-billing-bill-detail-create" | quote }}
   - name: EXPENSE_BILLING_BILL_DETAIL_UPDATE
-    value: "expense-bill-detail-update"
+    value: {{ index .Values "expense-billing-bill-detail-update" | quote }}
   - name: EXPENSE_BILL_TASK
-    value: "expense-bill-task"
+    value: {{ index .Values "expense-bill-task" | quote }}
   - name: EXPENSE_BILL_TASK_DETAILS
-    value: "expense-bill-task-details"
+    value: {{ index .Values "expense-bill-task-details" | quote }}
   - name: EXPENSE_TASK_STATUS_UPDATE
-    value: "expense-task-status-update"
+    value: {{ index .Values "expense-task-status-update" | quote }}
   - name: EXPENSE_TASK_DETAILS_UPDATE
-    value: "expense-task-details-update"
+    value: {{ index .Values "expense-task-details-update" | quote }}
   - name: EXPENSE_BILLING_PAYMENT_CREATE
-    value: "expense-payment-create"
+    value: {{ index .Values "expense-billing-payment-create" | quote }}
   - name: EXPENSE_BILLING_PAYMENT_UPDATE
-    value: "expense-payment-update"
-  - name: EGOV_HRMS_SEARCH_ENDPOINT
-    value: "/egov-hrms/employees/_search"
-  - name: WORKS_INDIVIDUAL_ENDPOINT
-    value: "/individual/v1/_search"
-  - name: EGOV_MDMS_SEARCH_ENDPOINT
-    value: "mdms-v2/v1/_search"
-  - name: EGOV_MDMS_V2_SEARCH_V2_ENDPOINT
-    value: "mdms-v2/v2/_search"
-  - name: PROJECT_SERVICE_HOST
-    valueFrom:
-      configMapKeyRef:
-        name: egov-service-host
-        key: project
-  - name: PROJECT_SEARCH_PATH
-    value: "project/v1/_search"
+    value: {{ index .Values "expense-billing-payment-update" | quote }}
+  - name: EXPENSE_BILL_REPORT_SAVE
+    value: {{ index .Values "expense-bill-report-save" | quote }}
+  - name: EXPENSE_BILL_REPORT_UPDATE
+    value: {{ index .Values "expense-bill-report-update" | quote }}
+  - name: KAFKA_TOPICS_CONSUMER
+    value: {{ index .Values "kafka-topics-consumer" | quote }}
+  - name: SPRING_KAFKA_CONSUMER_PROPERTIES_MAX_PARTITION_FETCH_BYTES
+    value: "15728640"
+  - name: SPRING_KAFKA_CONSUMER_PROPERTIES_FETCH_MAX_BYTES
+    value: "15728640"
+

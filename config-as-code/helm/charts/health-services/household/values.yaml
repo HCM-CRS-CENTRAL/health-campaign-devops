@@ -28,8 +28,9 @@ healthChecks:
   readinessProbePath: "/household/health"
 appType: "java-spring"
 tracing-enabled: true
-kafka-mdc-enabled: "true"
-heap: "-Xmx1024m -Xms192m"
+memory_limits: 768Mi
+cpu_limits: '400m'
+heap: "-Xmx1024m -Xms384m"
 java-args: ""
 persist-yml-path: "file:///work-dir/health-campaign-config/egov-persister/household-persister.yml"
 indexer-yml-path: "file:///work-dir/health-campaign-config/egov-persister/household-indexer.yml"
@@ -48,9 +49,12 @@ household-consumer-bulk-update-topic: update-household-bulk-topic
 household-kafka-create-topic: save-household-topic
 household-kafka-update-topic: update-household-topic
 household-kafka-delete-topic: delete-household-topic
+kafka-mdc-enabled: "true"
 
 # Additional Container Envs
 env: |
+  - name: TRACER_KAFKA_MDC_ENABLED
+    value: {{ index .Values "kafka-mdc-enabled" | quote }}
   - name: SPRING_KAFKA_CONSUMER_GROUP_ID
     value: {{ index .Values "kafka-consumer-group-id" | quote }}
   - name: SPRING_KAFKA_PRODUCER_KEY_SERIALIZER
@@ -143,7 +147,3 @@ env: |
     value: {{ index .Values "household-kafka-update-topic" | quote }}
   - name: HOUSEHOLD.KAFKA.DELETE.TOPIC
     value: {{ index .Values "household-kafka-delete-topic" | quote }}
-  - name: HOUSEHOLD_MEMBER_RELATIONSHIP_VALIDATION
-    value: "false"
-  - name: TRACER_KAFKA_MDC_ENABLED
-    value: {{ index .Values "kafka-mdc-enabled" | quote }}

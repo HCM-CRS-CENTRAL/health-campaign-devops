@@ -20,7 +20,7 @@ initContainers:
 # Container Configs
 image:
   repository: "egov-localization"
-replicas: "2"
+replicas: "1"
 appType: "java-spring"
 tracing-enabled: true
 heap: "-Xmx256m -Xms256m"
@@ -39,30 +39,8 @@ env: |
     valueFrom:
       configMapKeyRef:
         name: egov-config
-        key: redis-downsync-host
+        key: redis-host
   - name: SPRING_REDIS_PORT
     value: "6379"
   - name: JAEGER_SAMPLER_PARAM
     value: "1"
-  - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
-    value: {{ .Values.hikariMaximumPoolSize | default "3" | quote }}
-  - name: LOCALIZATION_UPSERT_ASYNC_ENABLED
-    value: {{ .Values.localizationUpsertAsyncEnabled | default "true" | quote }}
-  - name: LOCALIZATION_UPSERT_TOPIC
-    value: {{ .Values.localizationUpsertTopic | default "save-localization-messages" | quote }}
-  - name: LOCALIZATION_UPSERT_REPLY_TOPIC
-    value: {{ .Values.localizationUpsertReplyTopic | default "localization-upsert-reply" | quote }}
-  - name: LOCALIZATION_UPSERT_TOPIC_PARTITIONS
-    value: {{ .Values.localizationUpsertTopicPartitions | default "3" | quote }}
-  - name: LOCALIZATION_UPSERT_TOPIC_REPLICATION_FACTOR
-    value: {{ .Values.localizationUpsertTopicReplicationFactor | default "1" | quote }}
-  - name: LOCALIZATION_UPSERT_CONSUMER_BATCH_SIZE
-    value: {{ .Values.localizationUpsertConsumerBatchSize | default "10" | quote }}
-  - name: LOCALIZATION_UPSERT_CONSUMER_GROUP
-    value: {{ .Values.localizationUpsertConsumerGroup | default "egov-localization-upsert" | quote }}
-  - name: LOCALIZATION_UPSERT_REPLY_TIMEOUT_MS
-    value: {{ .Values.localizationUpsertReplyTimeoutMs | default "60000" | quote }}
-  - name: LOCALIZATION_SEARCH_MODULE_ABSENT_MAX_MESSAGES
-    value: {{ .Values.moduleAbsentMaxMessages | default "200000" | quote }}
-  - name: LOCALIZATION_CACHE_MAX_ENTRY_BYTES
-    value: {{ .Values.cacheMaxEntryBytes | default "10485760" | quote }}
