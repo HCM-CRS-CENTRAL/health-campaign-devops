@@ -11,6 +11,8 @@ ingress:
   enabled: true
   zuul: true
   context: "health-expense-calculator"
+  additionalAnnotations: |
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
 
 # Init Containers Configs
 initContainers:
@@ -29,12 +31,16 @@ healthChecks:
   livenessProbePath: "/health-expense-calculator/health"
   readinessProbePath: "/health-expense-calculator/health"
 appType: "java-spring"
+hpa:
+  enabled: false
 tracing-enabled: true
 heap: "-Xmx256m -Xms256m"
 memory_limits: 512Mi
 java-args: ""
-java-tool-options: ""
 cpu_limits: "300m"
+spring-kafka-producer-properties-max-request-size: "10485760"
+expense-calculator-create-topic: save-calculator
+kafka-topics-consumer: service-consumer-topic
 
 # Additional Container Envs
 env: |
@@ -44,10 +50,6 @@ env: |
     value: {{ index .Values "heap" | quote }}
   - name: JAVA_ARGS
     value: {{ index .Values "java-args" | quote }}
-  {{- if index .Values "java-tool-options" }}
-  - name: JAVA_TOOL_OPTIONS
-    value: {{ index .Values "java-tool-options" | quote }}
-  {{- end }}
   - name: SERVER_CONTEXT_PATH
     value: /health-expense-calculator
   - name: SERVER_SERVLET_CONTEXT-PATH
@@ -74,9 +76,9 @@ env: |
         name: egov-service-host
         key: mdms-v2
   - name: EGOV_MDMS_SEARCH_ENDPOINT
-    value: "mdms-v2/v1/_search"
+    value: "mdms-v2/v1/_search"      
   - name: EGOV_IDGEN_HOST
-    valueFrom:
+    valueFrom: 
       configMapKeyRef:
         name: egov-service-host
         key: egov-idgen
@@ -91,12 +93,12 @@ env: |
         name: egov-service-host
         key: mdms-v2
   - name: EGOV_MDMS_SEARCH_V2_ENDPOINT
-    value: "mdms-v2/v1/_search"
+    value: "mdms-v2/v1/_search"   
   - name: WORKS_ATTENDANCE_LOG_HOST
     valueFrom:
       configMapKeyRef:
         name: egov-service-host
-        key: health-attendance
+        key: attendance-service
   - name: EGOV_BOUNDARY_HOST
     valueFrom:
       configMapKeyRef:
@@ -108,9 +110,11 @@ env: |
     valueFrom:
       configMapKeyRef:
         name: egov-config
-        key: boundary-hierarchy
+        key: {{ index .Values "boundary-hierarchy-name" | default "boundary-hierarchy" }}
+  - name: EGOV_LOCALIZATION_MODULE_NAME
+    value: {{ index .Values "egov-localization-module-name" | default "hcm-boundary-admin" | quote }}
   - name: EGOV_LOCALIZATION_LOCALE_CODE
-    value: {{ index .Values "localization-locale-code" | default "en_DEMO" | quote }}
+    value: {{ index .Values "egov-localization-locale-code" | default "en_NG" | quote }}
   - name: PROJECT_SERVICE_HOST
     valueFrom:
       configMapKeyRef:
@@ -142,37 +146,37 @@ env: |
   - name: PAYMENT_PDF_KEY
     value: {{ index .Values "payment-pdf-key" | quote }}
   {{- end }}
-  
-  {{- if index .Values "report-localization-module-name" }}
+  {{- if index .Values "egov-filestore-signature-connect-timeout-ms" }}
+  - name: EGOV_FILESTORE_SIGNATURE_CONNECT_TIMEOUT_MS
+    value: {{ index .Values "egov-filestore-signature-connect-timeout-ms" | quote }}
+  {{- end }}
+  {{- if index .Values "egov-filestore-signature-read-timeout-ms" }}
+  - name: EGOV_FILESTORE_SIGNATURE_READ_TIMEOUT_MS
+    value: {{ index .Values "egov-filestore-signature-read-timeout-ms" | quote }}
+  {{- end }}
+
   - name: REPORT_LOCALIZATION_MODULE_NAME
-    value: {{ index .Values "report-localization-module-name" | quote }}
-  {{- end }}
-  
-  {{- if index .Values "report-localization-boundary-module-name" }}
+    value: {{ index .Values "report-localization-module-name" | default "hcm-payments" | quote }}
   - name: REPORT_LOCALIZATION_BOUNDARY_MODULE_NAME
-    value: {{ index .Values "report-localization-boundary-module-name" | quote }}
-  {{- end }}
-  
-  {{- if index .Values "report-localization-locale-code" }}
+    value: {{ index .Values "report-localization-boundary-module-name" | default "hcm-boundary-admin" | quote }}
   - name: REPORT_LOCALIZATION_LOCALE_CODE
-    value: {{ index .Values "report-localization-locale-code" | quote }}
-  {{- end }}
-  
+    value: {{ index .Values "report-localization-locale-code" | default "en_NG" | quote }}
+
   {{- if index .Values "report-header-title" }}
   - name: REPORT_HEADER_TITLE
     value: {{ index .Values "report-header-title" | quote }}
   {{- end }}
-  
+
   {{- if index .Values "report-date-time-format" }}
   - name: REPORT_DATE_TIME_FORMAT
     value: {{ index .Values "report-date-time-format" | quote }}
   {{- end }}
-  
+
   {{- if index .Values "report-date-time-zone" }}
   - name: REPORT_DATE_TIME_ZONE
     value: {{ index .Values "report-date-time-zone" | quote }}
   {{- end }}
-  
+
   {{- if index .Values "report-error-queue-topic" }}
   - name: REPORT_ERROR_QUEUE_TOPIC
     value: {{ index .Values "report-error-queue-topic" | quote }}
@@ -223,21 +227,24 @@ env: |
     value: {{ index .Values "report-generation-retry-trigger-topic" | quote }}
   {{- end }}
   - name: SPRING_DATA_REDIS_HOST
-    value: redis.backbone
+    valueFrom:
+      configMapKeyRef:
+        name: egov-config
+        key: redis-host
   - name: SPRING_DATA_REDIS_PORT
     value: "6379"
   - name: SPRING_KAFKA_CONSUMER_GROUP_ID
     value: {{ index .Values "spring-kafka-consumer-group-id" | quote }}
   {{- if index .Values "spring-kafka-producer-properties-max-request-size" }}
   - name: SPRING_KAFKA_PRODUCER_PROPERTIES_MAX_REQUEST_SIZE
-    value: {{ index .Values "spring-kafka-producer-properties-max-request-size" | quote }}
+    value: {{ index .Values "spring-kafka-producer-properties-max-request-size" | quote }} 
   {{- end }}
   - name: WORKS_ATTENDANCE_REGISTER_SEARCH_ENDPOINT
-    value: health-attendance/v1/_search
+    value: attendance/v1/_search
   - name: WORKS_ATTENDANCE_REGISTER_UPDATE_ENDPOINT
-    value: health-attendance/v1/_update
-  - name: EGOV_MUSTERROLL_SEARCH_ENDPOINT
-    value: {{ index .Values "egov-musterroll-search-endpoint" | quote }}
+    value: attendance/v1/_update
+  - name: EGOV_MUSTERROLL_SEARCH_ENDPOINT 
+    value: {{ index .Values "egov-musterroll-search-endpoint" | quote }} 
   - name: IS_HEALTH_CONTEXT_ENABLED
     value: "true"
   - name: EGOV_INDIVIDUAL_SEARCH_ENDPOINT
@@ -264,7 +271,12 @@ env: |
     value: {{ index .Values "project-management-system-kafka-update-topic" | default "update-project" | quote }}
   - name: PROJECT_MANAGEMENT_SYSTEM_KAFKA_UPDATE_DATE_TOPIC
     value: {{ index .Values "project-management-system-kafka-update-date-topic" | default "update-project-date" | quote }}
-  - name: EGOV_WORKS_EXPENSE_WAGE_BUSINESS_SERVICE
-    value: "EXPENSE.WAGES"
-  - name: EGOV_HRMS_SEARCH_ENDPOINT
-    value: "/egov-hrms/employees/_search"
+  - name: EXPENSE_CALCULATOR_CREATE_TOPIC
+    value: {{ index .Values "expense-calculator-create-topic" | quote }}
+  - name: KAFKA_TOPICS_CONSUMER
+    value: {{ index .Values "kafka-topics-consumer" | quote }}
+  - name: SPRING_KAFKA_CONSUMER_PROPERTIES_MAX_PARTITION_FETCH_BYTES
+    value: "15728640"
+  - name: SPRING_KAFKA_CONSUMER_PROPERTIES_FETCH_MAX_BYTES
+    value: "15728640"
+

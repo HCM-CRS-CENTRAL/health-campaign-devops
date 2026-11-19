@@ -25,17 +25,21 @@ healthChecks:
   livenessProbePath: "/mdms-v2/health"
   readinessProbePath: "/mdms-v2/health"
 appType: "java-spring"
-tracing-enabled: false
+tracing-enabled: true
+memory_limits: 512Mi
 heap: "-Xmx512m -Xms512m"
 java-args: "-Dspring.profiles.active=monitoring"
 egov-mdms-schema-definition-save-topic: "save-mdms-schema-definition"
 egov-mdms-data-save-topic: "save-mdms-data"
+mdms-v1-max-result-limit: "10000"
+mdms-cache-data-ttl-minutes: "5"
+mdms-cache-schema-ttl-minutes: "30"
+logging-level-org-springframework-aop: "DEBUG"
+logging-level-org-egov-infra-mdms-config-heapmonitorinterceptor: "DEBUG"
 
 # Additional Container Envs
 env: |
   - name: SERVER_CONTEXT_PATH
-    value: /mdms-v2
-  - name: SERVER_SERVLET_CONTEXT_PATH
     value: /mdms-v2
   - name: SPRING_KAFKA_CONSUMER_GROUP_ID
     value: egov-mdms-service-consumer-group
@@ -55,7 +59,26 @@ env: |
     value: "false"  
   - name: MANAGEMENT_SECURITY_ENABLED
     value: "false"
+  - name: JAVA_ENABLE_DEBUG
+    value: {{ index .Values "java-enable-debug" | default "false" | quote }}
   - name: EGOV_MDMS_SCHEMA_DEFINITION_SAVE_TOPIC
     value: {{ index .Values "egov-mdms-schema-definition-save-topic" | quote }}
   - name: EGOV_MDMS_DATA_SAVE_TOPIC
-    value: {{ index .Values "egov-mdms-data-save-topic" | quote }}  
+    value: {{ index .Values "egov-mdms-data-save-topic" | quote }}
+  - name: MDMS_V1_MAX_RESULT_LIMIT
+    value: {{ index .Values "mdms-v1-max-result-limit" | quote }}
+  - name: SPRING_DATA_REDIS_HOST
+    valueFrom:
+      configMapKeyRef:
+        name: egov-config
+        key: redis-host
+  - name: SPRING_DATA_REDIS_PORT
+    value: "6379"
+  - name: MDMS_CACHE_DATA_TTL_MINUTES
+    value: {{ index .Values "mdms-cache-data-ttl-minutes" | quote }}
+  - name: MDMS_CACHE_SCHEMA_TTL_MINUTES
+    value: {{ index .Values "mdms-cache-schema-ttl-minutes" | quote }}
+  - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_AOP
+    value: {{ index .Values "logging-level-org-springframework-aop" | quote }}
+  - name: LOGGING_LEVEL_ORG_EGOV_INFRA_MDMS_CONFIG_HEAPMONITORINTERCEPTOR
+    value: {{ index .Values "logging-level-org-egov-infra-mdms-config-heapmonitorinterceptor" | quote }}

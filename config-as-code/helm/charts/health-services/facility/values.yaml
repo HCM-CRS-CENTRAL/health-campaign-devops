@@ -27,17 +27,23 @@ healthChecks:
   readinessProbePath: "/facility/health"
 appType: "java-spring"
 tracing-enabled: true
-kafka-mdc-enabled: "true"
-cpu_limits: 500m
-cpu_requests: 100m
-memory_requests: 256Mi
 heap: "-Xmx192m -Xms192m"
 java-args: ""
 persist-yml-path: "file:///work-dir/health-campaign-config/egov-persister/facility-persister.yml"
 indexer-yml-path: "file:///work-dir/health-campaign-config/egov-indexer/facility-indexer.yml"
 
+facility-kafka-create-topic: save-facility-topic
+facility-kafka-update-topic: update-facility-topic
+facility-kafka-delete-topic: delete-facility-topic
+facility-consumer-bulk-delete-topic: delete-facility-bulk-topic
+facility-consumer-bulk-create-topic: create-facility-bulk-topic
+facility-consumer-bulk-update-topic: update-facility-bulk-topic
+kafka-mdc-enabled: "true"
+
 # Additional Container Envs
 env: |
+  - name: TRACER_KAFKA_MDC_ENABLED
+    value: {{ index .Values "kafka-mdc-enabled" | quote }}
   - name: SPRING_KAFKA_CONSUMER_GROUP_ID
     value: health-project
   - name: SPRING_KAFKA_PRODUCER_KEY_SERIALIZER
@@ -74,6 +80,8 @@ env: |
     value: {{ index .Values "heap" | quote }}
   - name: JAVA_ARGS
     value: {{ index .Values "java-args" | quote }}
+  - name: JAVA_ENABLE_DEBUG
+    value: {{ index .Values "java-enable-debug" | quote }}
   - name: SERVER_PORT
     value: "8080"
   - name: SECURITY_BASIC_ENABLED
@@ -92,17 +100,16 @@ env: |
       configMapKeyRef:
         name: egov-config
         key: boundary-hierarchy
+  
   - name: FACILITY.KAFKA.CREATE.TOPIC
-    value: "save-facility-topic"
+    value: {{ index .Values "facility-kafka-create-topic" | quote}}
   - name: FACILITY.KAFKA.UPDATE.TOPIC
-    value: "update-facility-topic"
+    value: {{ index .Values "facility-kafka-update-topic" | quote}}
   - name: FACILITY.KAFKA.DELETE.TOPIC
-    value: "delete-facility-topic"
+    value: {{ index .Values "facility-kafka-delete-topic" | quote}}
   - name: FACILITY.CONSUMER.BULK.DELETE.TOPIC
-    value: "delete-facility-bulk-topic"
+    value: {{ index .Values "facility-consumer-bulk-delete-topic" | quote}}
   - name: FACILITY.CONSUMER.BULK.CREATE.TOPIC
-    value: "create-facility-bulk-topic"
+    value: {{ index .Values "facility-consumer-bulk-create-topic" | quote}}
   - name: FACILITY.CONSUMER.BULK.UPDATE.TOPIC
-    value: "update-facility-bulk-topic"
-  - name: TRACER_KAFKA_MDC_ENABLED
-    value: {{ index .Values "kafka-mdc-enabled" | quote }}
+    value: {{ index .Values "facility-consumer-bulk-update-topic" | quote}}

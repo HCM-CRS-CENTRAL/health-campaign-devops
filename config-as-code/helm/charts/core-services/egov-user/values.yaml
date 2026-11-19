@@ -20,16 +20,13 @@ initContainers:
 # Container Configs
 image:
   repository: "egov-user"
-replicas: "4"
+replicas: "1"
 healthChecks:
   enabled: true
   livenessProbePath: "/user/health"
   readinessProbePath: "/user/health"
 appType: "java-spring"
 tracing-enabled: true
-cpu_limits: 4000m
-cpu_requests: 1000m
-memory_requests: 768Mi
 
 decryption-abac-enabled: "false"
 account-unlock-cool-down-period-minutes: "30"
@@ -44,16 +41,25 @@ roles-state-level: "true"
 citizen-registration-withlogin: "true"
 citizen-otp-fixed: "123456"
 citizen-otp-fixed-enabled: "true"
-heap: "-Xmx512m -Xms256m"
+heap: "-Xmx192m -Xms192m"
 java-args: ""
-java-enable-debug: "true"
+java-enable-debug: "false"
+egov-user-session-single-active-enabled: "false"
+egov-user-session-last.contact-interval-seconds: "60"
+egov-user-session-inactivity-period-days: "29"
+egov-user-session-single-active-tenants: "bednet"
 
 # Additional Container Envs
 env: |
   - name: SERVER_PORT
     value: "8080"
+  - name: JAVA_ENABLE_DEBUG
+    value: {{ index .Values "java-enable-debug" | quote }}
   - name: SPRING_REDIS_HOST
-    value: redis.backbone
+    valueFrom:
+      configMapKeyRef:
+        name: egov-config
+        key: redis-host
   - name: SPRING_REDIS_PORT
     value: "6379"
   - name: EGOV_OTP_HOST
@@ -80,12 +86,12 @@ env: |
     valueFrom:
       configMapKeyRef:
         name: egov-service-host
-        key: egov-mdms-service
+        key: mdms-v2
   - name: EGOV_MDMS_HOST
     valueFrom:
       configMapKeyRef:
         name: egov-service-host
-        key: egov-mdms-service
+        key: mdms-v2
   - name: EGOV_MDMS_SEARCH_ENDPOINT
     value: "/mdms-v2/v1/_search"
   - name: EGOV_MDMS_PATH
@@ -97,6 +103,11 @@ env: |
       configMapKeyRef:
         name: egov-service-host
         key: egov-enc-service
+  - name: EGOV_PUSH_NOTIFICATION_HOST
+    valueFrom:
+      configMapKeyRef:
+        name: egov-service-host
+        key: egov-notification-push
   - name: EGOV_LOCALIZATION_HOST
     valueFrom:
       configMapKeyRef:
@@ -182,42 +193,13 @@ env: |
     value: "false" 
   - name: EGOV_USER_PWD_PATTERN
     value: ((?=.*\d)(?=.*[a-z])(?=.*[@#$%])(?=\S+$).*$)
-  - name: LOGGING_LEVEL_WEB
-    value: DEBUG
-  - name: LOGGING_LEVEL_ORG_EGOV_USER
-    value: DEBUG
-  - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB
-    value: DEBUG
-  - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY
-    value: DEBUG
-  - name: AUTH_OIDC_PROVIDERS_SOURCE
-    value: mdms
-  - name: JAVA_TOOL_OPTIONS
-    value: -Djava.net.preferIPv4Stack=true -Djdk.httpclient.allowRestrictedHeaders=host
-      -Dhttps.protocols=TLSv1.2
-  - name: EGOV_HRMS_HOST
-    valueFrom:
-      configMapKeyRef:
-        key: egov-hrms
-        name: egov-service-host
-  - name: EGOV_HRMS_EMPLOYEE_CREATE_URL
-    value: /egov-hrms/employees/_create
-  - name: MDMS_OIDCPROVIDERS_TENANTID
-    value: demo
-  - name: AUTH_OIDC_ENABLED
-    value: "true"
-  - name: EGOV_BOUNDARY_HOST
-    valueFrom:
-      configMapKeyRef:
-        key: boundary-service
-        name: egov-service-host
-  - name: EGOV_BOUNDARY_HIERARCHY_SEARCH_URL
-    value: /boundary-service/boundary-hierarchy-definition/_search
-  - name: EGOV_BOUNDARY_RELATIONSHIPS_SEARCH_URL
-    value: /boundary-service/boundary-relationships/_search
-  # Commented out - requires 'sso' secret to be created
-  # - name: GRAPH_CLIENT_SECRET_MZ_OIDC_AZURE
-  #   valueFrom:
-  #     secretKeyRef:
-  #       key: graph-client-secret-mz-oidc-azure
-  #       name: sso
+  - name: EGOV_USER_SESSION_SINGLE_ACTIVE_TENANTS
+    value: {{ index .Values "egov-user-session-single-active-tenants" | quote }}
+  - name: EGOV_USER_SESSION_SINGLE_ACTIVE_ENABLED
+    value: {{ index .Values "egov-user-session-single-active-enabled" | quote }}
+  - name: EGOV_USER_SESSION_LAST_CONTACT_INTERVAL_SECONDS
+    value: {{ index .Values "egov-user-session-last.contact-interval-seconds" | quote }}
+  - name: EGOV_USER_SESSION_INACTIVITY_PERIOD_DAYS
+    value: {{ index .Values "egov-user-session-inactivity-period-days" | quote }}
+  - name: EGOV_ENC_STATE_LEVEL_TENANT_IDS
+    value: "liberia"

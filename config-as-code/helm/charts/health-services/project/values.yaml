@@ -27,10 +27,10 @@ healthChecks:
   readinessProbePath: "/project/health"
 appType: "java-spring"
 tracing-enabled: true
-kafka-mdc-enabled: "true"
-heap: "-Xmx192m -Xms192m"
+heap: "-Xmx1024m -Xms1024m"
 java-args: ""
-memory_requests: 256Mi
+persist-yml-path: "file:///work-dir/health-campaign-config/egov-persister/project-persister.yml"
+indexer-yml-path: "file:///work-dir/health-campaign-config/egov-indexer/project-indexer.yml"
 
 kafka-consumer-group-id: health-project
 project-task-kafka-create-topic: save-project-task-topic
@@ -71,9 +71,12 @@ project-user-action-task-consumer-bulk-create-topic: save-user-action-project-ta
 project-user-action-task-consumer-bulk-update-topic: update-user-action-project-task-bulk-topic
 project-location-capture-kafka-create-topic: save-location-capture-project-topic
 project-location-capture-consumer-bulk-create-topic: save-location-capture-project-bulk-topic
+kafka-mdc-enabled: "true"
 
 # Additional Container Envs
 env: |
+  - name: TRACER_KAFKA_MDC_ENABLED
+    value: {{ index .Values "kafka-mdc-enabled" | quote }}
   - name: SPRING_KAFKA_CONSUMER_GROUP_ID
     value: {{ index .Values "kafka-consumer-group-id" | quote }}
   - name: SPRING_KAFKA_PRODUCER_KEY_SERIALIZER
@@ -119,6 +122,8 @@ env: |
     value: {{ index .Values "heap" | quote }}
   - name: JAVA_ARGS
     value: {{ index .Values "java-args" | quote }}
+  - name: JAVA_ENABLE_DEBUG
+    value: {{ index .Values "java-enable-debug" | quote }}
   - name: SERVER_PORT
     value: "8080"
   - name: SECURITY_BASIC_ENABLED
@@ -306,7 +311,3 @@ env: |
     value: {{ index .Values "project-location-capture-kafka-create-topic" | quote }}
   - name: PROJECT_LOCATION_CAPTURE_CONSUMER_BULK_CREATE_TOPIC
     value: {{ index .Values "project-location-capture-consumer-bulk-create-topic" | quote }}
-  - name: PROJECT_RELATIONSHIP_VALIDATION
-    value: "false"
-  - name: TRACER_KAFKA_MDC_ENABLED
-    value: {{ index .Values "kafka-mdc-enabled" | quote }}

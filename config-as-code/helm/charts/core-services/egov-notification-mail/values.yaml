@@ -27,7 +27,7 @@ env: |
     valueFrom:
       secretKeyRef:
         name: egov-notification-mail
-        key: mailsenderusername                  
+        key: mailsenderusername                   
   - name: MAIL_SENDER_PASSWORD
     valueFrom:
       secretKeyRef:

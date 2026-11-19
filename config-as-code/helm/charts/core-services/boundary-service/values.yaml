@@ -36,6 +36,14 @@ kafka-topics-create-boundary-relationship: "save-boundary-relationship"
 kafka-topics-update-boundary-relationship: "update-boundary-relationship"
 memory_limits: "512Mi"
 cpu_limits: "150m"
+kafka-topics-create-boundary-identifier: "save-boundary-identifier"
+kafka-topics-update-boundary-identifier: "update-boundary-identifier"
+boundary-identifier-max-size: "100"
+boundary-identifier-generate-batch-size: "100"
+egov-idgen-boundary-identifier-name: "boundary.identifier"
+egov-idgen-boundary-identifier-format: "[SEQ_EG_BOUNDARY_IDENTIFIER]"
+egov-idgen-boundary-identifier-sequence-min-digits: "4"
+
 
 # Additional Container Envs
 env: |
@@ -59,6 +67,8 @@ env: |
     value: "false"  
   - name: MANAGEMENT_SECURITY_ENABLED
     value: "false"
+  - name: JAVA_ENABLE_DEBUG
+    value: {{ index .Values "java-enable-debug" | default "false" | quote }}
   - name: KAFKA_TOPICS_CREATE_BOUNDARY
     value: {{ index .Values "kafka-topics-create-boundary" | quote }}
   - name: KAFKA_TOPICS_CREATE_BOUNDARY_HIERARCHY
@@ -71,3 +81,24 @@ env: |
     value: {{ index .Values "kafka-topics-update-boundary" | quote }}
   - name: KAFKA_TOPICS_UPDATE_BOUNDARY_HIERARCHY
     value: {{ index .Values "kafka-topics-update-boundary-hierarchy" | quote }}
+  - name: KAFKA_TOPICS_CREATE_BOUNDARY_IDENTIFIER
+    value: {{ index .Values "kafka-topics-create-boundary-identifier" | quote }}
+  - name: KAFKA_TOPICS_UPDATE_BOUNDARY_IDENTIFIER
+    value: {{ index .Values "kafka-topics-update-boundary-identifier" | quote }}
+  - name: BOUNDARY_IDENTIFIER_MAX_SIZE
+    value: {{ index .Values "boundary-identifier-max-size" | quote }}
+  - name: BOUNDARY_IDENTIFIER_GENERATE_BATCH_SIZE
+    value: {{ index .Values "boundary-identifier-generate-batch-size" | quote }}
+  - name: EGOV_IDGEN_HOST
+    valueFrom:
+      configMapKeyRef:
+        name: egov-service-host
+        key: egov-idgen
+  - name: EGOV_IDGEN_PATH
+    value: "egov-idgen/id/_generate"
+  - name: EGOV_IDGEN_BOUNDARY_IDENTIFIER_NAME
+    value: {{ index .Values "egov-idgen-boundary-identifier-name" | quote }}
+  - name: EGOV_IDGEN_BOUNDARY_IDENTIFIER_FORMAT
+    value: {{ index .Values "egov-idgen-boundary-identifier-format" | quote }}
+  - name: EGOV_IDGEN_BOUNDARY_IDENTIFIER_SEQUENCE_MIN_DIGITS
+    value: {{ index .Values "egov-idgen-boundary-identifier-sequence-min-digits" | quote }}

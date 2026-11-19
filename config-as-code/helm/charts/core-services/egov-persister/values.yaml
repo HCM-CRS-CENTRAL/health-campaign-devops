@@ -21,10 +21,16 @@ healthChecks:
 appType: "java-spring"
 tracing-enabled: true
 persist-yml-path: "file:///work-dir/configs/egov-persister/apportion-persister.yml,file:///work-dir/configs/egov-persister/property-services-registry.yml,file:///work-dir/configs/egov-persister/billing-services-persist.yml,file:///work-dir/configs/egov-persister/egf-bill.yaml,file:///work-dir/configs/egov-persister/egov-user-event-persister.yml,file:///work-dir/configs/egov-persister/egov-workflow-v2-persister.yml,file:///work-dir/configs/egov-persister/firenoc_persiter.yaml,file:///work-dir/configs/egov-persister/hrms-employee-persister.yml,file:///work-dir/configs/egov-persister/pdf-generator.yml,file:///work-dir/configs/egov-persister/pg-service-persister.yml,file:///work-dir/configs/egov-persister/pgr.v3.yml,file:///work-dir/configs/egov-persister/property-services.yml,file:///work-dir/configs/egov-persister/pt-calculator-v2-persister.yml,file:///work-dir/configs/egov-persister/pt-drafts.yml,file:///work-dir/configs/egov-persister/pt-persist.yml,file:///work-dir/configs/egov-persister/tl-billing-slab-persister.yml,file:///work-dir/configs/egov-persister/tl-calculation-persister.yml,file:///work-dir/configs/egov-persister/tradelicense-persister-bpachanges.yml,file:///work-dir/configs/egov-persister/uploader-persister.yml,file:///work-dir/configs/egov-persister/collection-migration-persister.yml,file:///work-dir/configs/egov-persister/water-persist.yml,file:///work-dir/configs/egov-persister/water-meter.yml,file:///work-dir/configs/egov-persister/assessment-persister.yml,file:///work-dir/configs/egov-persister/sewerage-persist.yml,file:///work-dir/configs/egov-persister/bpa-persister.yml"
-heap: "-Xmx768m -Xms512m"
-memory_requests: 256Mi
+heap: "-Xmx192m -Xms192m"
 java-args: ""
-kafka-consumer-group-id: "egov-infra-persist"
+
+# Kafka consumer / producer overrides for large (5 MB) messages
+spring-kafka-consumer-properties-max-partition-fetch-bytes: "6291456"
+spring-kafka-consumer-properties-fetch-max-bytes: "6291456"
+spring-kafka-consumer-properties-max-poll-interval-ms: "300000"
+spring-kafka-producer-properties-max-request-size: "6291456"
+spring-kafka-producer-properties-buffer-memory: "33554432"
+spring-kafka-producer-properties-compression-type: "gzip"
 
 # Additional Container Envs
 env: |
@@ -38,7 +44,38 @@ env: |
     value: "8080"
   - name: JAEGER_SAMPLER_PARAM
     value: "1"
+  - name: SPRING_KAFKA_CONSUMER_PROPERTIES_MAX_PARTITION_FETCH_BYTES
+    value: {{ index .Values "spring-kafka-consumer-properties-max-partition-fetch-bytes" | quote }}
+  - name: SPRING_KAFKA_CONSUMER_PROPERTIES_FETCH_MAX_BYTES
+    value: {{ index .Values "spring-kafka-consumer-properties-fetch-max-bytes" | quote }}
+  - name: SPRING_KAFKA_CONSUMER_PROPERTIES_MAX_POLL_INTERVAL_MS
+    value: {{ index .Values "spring-kafka-consumer-properties-max-poll-interval-ms" | quote }}
+  - name: SPRING_KAFKA_PRODUCER_PROPERTIES_MAX_REQUEST_SIZE
+    value: {{ index .Values "spring-kafka-producer-properties-max-request-size" | quote }}
+  - name: SPRING_KAFKA_PRODUCER_PROPERTIES_BUFFER_MEMORY
+    value: {{ index .Values "spring-kafka-producer-properties-buffer-memory" | quote }}
+  - name: SPRING_KAFKA_PRODUCER_PROPERTIES_COMPRESSION_TYPE
+    value: {{ index .Values "spring-kafka-producer-properties-compression-type" | quote }}
+
   - name: PERSISTER_BULK_ENABLED
-    value: "true"
+    value: "false"
+  - name: PERSISTER_BATCH_SIZE
+    value: "100"
   - name: PERSISTER_BATCH_TOPICS
-    value: "boundary-relationship-bulk-create-job"
+    value: ""
+  - name: TRACER_ERRORS_TOPIC
+    value: "egov-persister-deadletter"
+  - name: TRACER_ERRORS_PUBLISH
+    value: "true"
+  - name: PERSISTER_DEAD_LETTER_REPROCESS_ENABLED
+    value: "true"
+  - name: PERSISTER_DEAD_LETTER_REPROCESS_ERROR_TOPIC
+    value: "egov-persister-deadletter-processed"
+  - name: PERSISTER_DEAD_LETTER_MAX_RETRIES
+    value: "5"
+  - name: PERSISTER_DB_HEALTH_CHECK_INTERVAL_MS
+    value: "5000"
+  - name: SPRING_KAFKA_PRODUCER_ACKS
+    value: "all"
+  - name: SPRING_KAFKA_PRODUCER_PROPERTIES_ENABLE_IDEMPOTENCE
+    value: "true"

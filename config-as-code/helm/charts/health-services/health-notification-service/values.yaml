@@ -3,11 +3,8 @@ labels:
   app: "health-notification-service"
   group: "health"
 
-namespace: egov
-
 # Ingress Configs
 ingress:
-  namespace: egov
   enabled: true
   zuul: true
   context: "health-notification-service"
@@ -30,12 +27,8 @@ healthChecks:
   readinessProbePath: "/health-notification-service/health"
 appType: "java-spring"
 tracing-enabled: true
-kafka-mdc-enabled: "true"
-memory_limits: 512Mi
-heap: "-Xmx384m -Xms384m"
+heap: "-Xmx192m -Xms192m"
 java-args: ""
-egov-mdms-service-host-key: "mdms-v2"
-egov-mdms-service-endpoint-key: "/mdms-v2/v1/_search"
 
 # Additional Container Envs
 env: |
@@ -54,6 +47,8 @@ env: |
     value: {{ index .Values "heap" | quote }}
   - name: JAVA_ARGS
     value: {{ index .Values "java-args" | quote }}
+  - name: JAVA_ENABLE_DEBUG
+    value: {{ index .Values "java-enable-debug" | quote }}
   - name: SERVER_PORT
     value: "8080"
   - name: SECURITY_BASIC_ENABLED
@@ -68,9 +63,9 @@ env: |
         name: egov-service-host
         key: mdms-v2
   - name: EGOV_MDMS_SEARCH_ENDPOINT
-    value: {{ .Values.mdmsV1SearchEndpoint | default "mdms-v2/v1/_search" }}
+    value: "/mdms-v2/v1/_search"
   - name: EGOV_MDMS_SEARCH_V2_ENDPOINT
-    value: {{ .Values.mdmsV2SearchEndpoint | default "mdms-v2/v2/_search" }}
+    value: "/mdms-v2/v2/_search"
   - name: EGOV_LOCALIZATION_HOST
     valueFrom:
       configMapKeyRef:
@@ -85,7 +80,7 @@ env: |
   - name: EGOV_LOCALIZATION_NOTIFICATION_MODULE
     value: "health-notification"
   - name: EGOV_LOCALIZATION_SUPPORTED_LOCALES
-    value: "en_DEMO,fr_DEMO,pt_DEMO"
+    value: "en_LIBERIA"
   - name: EGOV_HOUSEHOLD_HOST
     valueFrom:
       configMapKeyRef:
@@ -95,6 +90,19 @@ env: |
     value: "/household/v1/_search"
   - name: EGOV_HOUSEHOLD_MEMBER_SEARCH_URL
     value: "/household/member/v1/_search"
+  - name: EGOV_USER_HOST
+    valueFrom:
+      configMapKeyRef:
+        name: egov-service-host
+        key: egov-user
+  - name: EGOV_USER_SEARCH_URL
+    value: "/user/_search"
+  - name: EGOV_CREATE_USER_URL
+    value: "/user/_create"
+  - name: EGOV_UPDATE_USER_URL
+    value: "/user/_update"
+  - name: EGOV_USER_INTEGRATION_ENABLED
+    value: "true"
   - name: EGOV_INDIVIDUAL_HOST
     valueFrom:
       configMapKeyRef:
@@ -109,6 +117,8 @@ env: |
         key: project
   - name: EGOV_PROJECT_SEARCH_URL
     value: "/project/v1/_search"
+  - name: EGOV_PROJECT_FACILITY_SEARCH_URL
+    value: "/project/facility/v1/_search"
   - name: EGOV_PROJECT_BENEFICIARY_SEARCH_URL
     value: "/project/beneficiary/v1/_search"
   - name: EGOV_ENC_HOST
@@ -134,8 +144,6 @@ env: |
         key: facility
   - name: EGOV_FACILITY_SEARCH_URL
     value: "/facility/v1/_search"
-  - name: EGOV_PROJECT_FACILITY_SEARCH_URL
-    value: "/project/facility/v1/_search"
   - name: EGOV_PUSH_NOTIFICATION_HOST
     valueFrom:
       configMapKeyRef:
@@ -161,6 +169,8 @@ env: |
     value: "save-hfreferral-topic"
   - name: HFREFERRAL_CONSUMER_UPDATE_TOPIC
     value: "update-hfreferral-topic"
+  - name: KAFKA_TOPICS_SAVE_FINAL_SMS_MESSAGE
+    value: "save-final-sms-message"
   - name: MDMS_NOTIFICATION_MODULE
     value: "HCM-NOTIFICATION-CONFIG"
   - name: MDMS_PROJECT_MODULE
@@ -180,13 +190,17 @@ env: |
   - name: NOTIFICATION_SCHEDULER_MAX_FETCH
     value: "10000"
   - name: STATE_LEVEL_TENANT_ID
-    value: {{ index .Values "tenantId" | default "demo" | quote }}
-  - name: EGOV_STATE_TENANT_ID
-    value: {{ index .Values "tenantId" | default "demo" | quote }}
+    valueFrom:
+      configMapKeyRef:
+        name: egov-config
+        key: egov-state-level-tenant-id
+  - name: STATE_LEVEL_TENANTID_LENGTH
+    valueFrom:
+      configMapKeyRef:
+        name: egov-config
+        key: state-level-tenantid-length
   - name: KAFKA_TENANT_ID_PATTERN
     valueFrom:
       configMapKeyRef:
         name: egov-config
         key: kafka-tenant-id-pattern
-  - name: TRACER_KAFKA_MDC_ENABLED
-    value: {{ index .Values "kafka-mdc-enabled" | quote }}

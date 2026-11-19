@@ -13,8 +13,21 @@ initContainers:
     repo: "git@github.com:egovernments/configs"
     branch: "master"
   extraInitContainers: |
+    - name: "gateway-kubernetes-discovery"
+      image: {{ .Values.global.containerRegistry }}/gateway-kubernetes-discovery:master-gateway-kubernetes-discovery-host-6fee599
+      env:
+      - name: "OUTPUT_FILE_PATH"
+        value: "/etc/zuul/routes.properties"
+      - name: "NAMESPACE"
+        valueFrom:
+          configMapKeyRef:
+            name: egov-config
+            key: gateway-discovery-namespace
+      volumeMounts:
+      - name: zuul-routes
+        mountPath: /etc/zuul
     - name: "git-sync"
-      image: k8s.gcr.io/git-sync:v3.1.1
+      image: registry.k8s.io/git-sync/git-sync:v4.4.0
       imagePullPolicy: IfNotPresent
       securityContext:
         runAsUser: 65533

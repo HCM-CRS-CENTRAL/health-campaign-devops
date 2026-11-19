@@ -30,7 +30,6 @@ healthChecks:
   readinessProbePath: "/worker/health"
 appType: "java-spring"
 tracing-enabled: true
-kafka-mdc-enabled: "true"
 central-instance-build: true
 heap: "-Xmx256m -Xms256m"
 memory_limits: 512Mi
@@ -38,9 +37,12 @@ cpu_limits: "300m"
 memory_requests: "368Mi"
 cpu_requests: "200m"
 java-args: ""
+kafka-mdc-enabled: "true"
 
 # Additional Container Envs
 env: |
+  - name: TRACER_KAFKA_MDC_ENABLED
+    value: {{ index .Values "kafka-mdc-enabled" | quote }}
   - name: SERVER_PORT
     value: "8080"
   - name: JAVA_OPTS
@@ -82,11 +84,8 @@ env: |
     value: "/egov-enc-service/crypto/v1/_encrypt"
   - name: EGOV_ENC_DECRYPT_ENDPOINT
     value: "/egov-enc-service/crypto/v1/_decrypt"
-  - name: EGOV_ENC_STATE_LEVEL_TENANT_IDS
-    valueFrom:
-      configMapKeyRef:
-        name: egov-config
-        key: egov-state-level-tenant-id
+  - name: STATE_LEVEL_TENANT_ID
+    value: "liberia"
   - name: KAFKA_TOPIC_AUDIT
     value: "audit-logs"
   - name: EGOV_MDMS_HOST
@@ -96,6 +95,11 @@ env: |
         key: mdms-v2
   - name: EGOV_MDMS_SEARCH_ENDPOINT
     value: "mdms-v2/v1/_search"
+  - name: STATE_LEVEL_TENANTID_LENGTH
+    valueFrom:
+      configMapKeyRef:
+        name: egov-config
+        key: state-level-tenantid-length
   - name: SPRING_DATA_REDIS_HOST
     valueFrom:
       configMapKeyRef:
@@ -105,15 +109,8 @@ env: |
     value: "6379"
   - name: ATTENDANCE_LOG_KAFKA_FIRST_SIGNATURE_TOPIC
     value: {{ .Values.firstAttendanceTopic | default "first-attendance-log" }}
-  - name: STATE_LEVEL_TENANT_ID
-    valueFrom:
-      configMapKeyRef:
-        name: egov-config
-        key: egov-state-level-tenant-id
   - name: ATTENDANCE_KAFKA_TENANT_ID_PATTERN
     valueFrom:
       configMapKeyRef:
         name: egov-config
         key: kafka-tenant-id-pattern
-  - name: TRACER_KAFKA_MDC_ENABLED
-    value: {{ index .Values "kafka-mdc-enabled" | quote }}
