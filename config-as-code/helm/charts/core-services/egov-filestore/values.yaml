@@ -67,6 +67,8 @@ ingress:
   enabled: true
   zuul: true
   context: "filestore"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 12m
 
 # Container Configs
 image:
