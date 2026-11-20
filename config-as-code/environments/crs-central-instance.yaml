@@ -241,7 +241,7 @@ egov-filestore:
   kafka-topics-malware-scan-request: "egov.malware.file-scan-request"
   central-instance-name: egov
   central-instance-build: true
-  central-instance-enabled: true
+  central-instance-enabled: false
 
 egov-idgen:
   image:
