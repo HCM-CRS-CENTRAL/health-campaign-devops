@@ -10,6 +10,56 @@ initContainers:
     schemaTable: "egov_filestore_schema"
     image:
       repository: "egov-filestore-db"
+    env: |
+        - name: "DB_URL"
+          valueFrom:
+            configMapKeyRef:
+              name: egov-config
+              {{- if index .Values "central-instance-build" }}
+              key: db-url
+              {{- else if and .Values.namespace (ne .Values.namespace "egov") }}
+              key: {{ .Values.namespace }}-db-url
+              {{- else }}
+              key: db-url
+              {{- end }}
+        - name: "SCHEMA_NAME"
+          {{- if and .Values.schemaNameExclude .Values.global.schema }}
+          {{- $all := .Values.global.schema }}
+          {{- $exclude := .Values.schemaNameExclude }}
+          {{- $filtered := $all }}
+          {{- range $exclude }}
+            {{- $filtered = without $filtered . }}
+          {{- end }}
+          value: "{{ join "," $filtered }}"
+          {{- else if and (index .Values "central-instance-build" | default false) (index .Values "central-instance-enabled" | default false) }}
+          valueFrom:
+            configMapKeyRef:
+              name: egov-config
+              key: db-schema-names
+          {{- else if and .Values.namespace (ne .Values.namespace "egov") }}
+          value: "{{ .Values.namespace }}"
+          {{- else }}
+          value: "public"
+          {{- end }}
+        - name: "SCHEMA_TABLE"
+          value: {{ .Values.initContainers.dbMigration.schemaTable | quote }}
+        - name: "FLYWAY_USER"
+          valueFrom:
+            secretKeyRef:
+                name: db
+                key: flyway-username
+        - name: "FLYWAY_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+                name: db
+                key: flyway-password
+        - name: "FLYWAY_LOCATIONS"
+          valueFrom:
+            configMapKeyRef:
+                name: egov-config
+                key: flyway-locations
+        - name: "FIXED_BUCKETNAME"
+          value: {{ index .Values "fixed-bucketname" | quote }}
 
 # Ingress Configs
 ingress:
