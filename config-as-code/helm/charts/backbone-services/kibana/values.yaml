@@ -2,7 +2,7 @@
 elasticsearchHosts: "https://elasticsearch-data:9200"
 elasticsearchCertificateSecret: elasticsearch-master-certs
 elasticsearchCertificateAuthoritiesFile: ca.crt
-elasticsearchCredentialSecret: elasticsearch-data-credentials
+elasticsearchCredentialSecret: elasticsearch-master-credentials
 
 replicas: 1
 namespace: es-cluster
