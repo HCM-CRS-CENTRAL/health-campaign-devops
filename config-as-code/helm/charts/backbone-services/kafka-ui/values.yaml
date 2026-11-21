@@ -6,7 +6,7 @@ labels:
 
 # Ingress Configs
 ingress:
-  enabled: false
+  enabled: true
   context: "kafka-ui"
   waf:
     enabled: false
