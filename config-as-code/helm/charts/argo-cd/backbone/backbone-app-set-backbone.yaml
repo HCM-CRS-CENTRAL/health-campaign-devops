@@ -44,6 +44,11 @@ spec:
             valuesFile: values.yaml
             namespace: kafka-kraft
             releaseName: kafka-kraft
+          - name: kafka-ui
+            chartPath: backbone-services/kafka-ui
+            valuesFile: values.yaml
+            namespace: backbone
+            releaseName: kafka-ui
           - name: elasticsearch-master
             chartPath: backbone-services/elasticsearch
             valuesFile: elasticsearch-master-values.yaml

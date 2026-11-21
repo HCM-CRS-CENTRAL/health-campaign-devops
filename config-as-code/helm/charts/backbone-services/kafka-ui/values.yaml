@@ -47,8 +47,8 @@ yamlApplicationConfig:
   kafka:
     clusters:
       - name: kafka-clusters
-        bootstrapServers: release-name-kafka-controller-0.release-name-kafka-controller-headless.kafka-cluster.svc.cluster.local:9092, release-name-kafka-controller-1.release-name-kafka-controller-headless.kafka-cluster.svc.cluster.local:9092, release-name-kafka-controller-2.release-name-kafka-controller-headless.kafka-cluster.svc.cluster.local:9092 
-        # readOnly: true
+        bootstrapServers: release-name-kafka.kafka-kraft.svc.cluster.local:9092
+        readOnly: true
   # spring:
   #   security:
   #     oauth2:
