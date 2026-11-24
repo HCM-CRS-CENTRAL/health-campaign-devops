@@ -30,9 +30,14 @@ cluster-configs:
       spring-datasource-tomcat-max-active: "2"
       spring-jpa-show-sql: "true"  
 
-    egov-service-host:    
+    egov-service-host:
       name: egov-service-host
-      namespace: [ egov ] 
+      namespace: [ egov ]
+
+    # data.fcm-tenant-project-map-json is set per env (tenant -> Firebase project id)
+    egov-notification-push:
+      name: egov-notification-push
+      namespace: [ egov ]
 
   secrets:
     db: 
@@ -42,6 +47,11 @@ cluster-configs:
     egov-notification-sms:
       namespace: egov
       name: egov-notification-sms
+
+    # fcm-service-account-key-json(-list) is set in the env secrets file
+    egov-notification-push:
+      namespace: [ egov ]
+      name: egov-notification-push
 
     egov-filestore: 
       namespace: egov

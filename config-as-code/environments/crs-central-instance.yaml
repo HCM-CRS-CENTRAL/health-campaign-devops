@@ -1273,12 +1273,12 @@ health-notification-service:
 egov-notification-push:
   image:
     repository: egovio/egov-notification-push
-    tag: nigeria-go-deep-push-notification-ca09919
+    tag: nigeria-go-deep-push-notification-batch-559f031
   initContainers:
     dbMigration:
       image:
         repository: egov-notification-push-db
-        tag: nigeria-go-deep-push-notification-ca09919
+        tag: nigeria-go-deep-push-notification-batch-559f031
   replicas: 1
   heap: -Xmx1296m -Xms1024m
   memory_limits: 2Gi
@@ -1290,6 +1290,8 @@ egov-notification-push:
   central-instance-name: egov
   namespace: egov
   java-enable-debug: false
+  hpa:
+    enabled: false
 
 transformer:
   image:
