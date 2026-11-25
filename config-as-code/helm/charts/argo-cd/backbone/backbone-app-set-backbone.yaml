@@ -103,6 +103,9 @@ spec:
           - ApplyOutOfSyncOnly=true
           - ServerSideApply=true
           - CreateNamespace=true
+          # Makes sync honour ignoreDifferences below (otherwise ignored fields are only
+          # hidden from the diff but still overwritten on sync).
+          - RespectIgnoreDifferences=true
           # Lets cert-manager's ClusterIssuers pass dry-run before its CRDs exist.
           - SkipDryRunOnMissingResource=true
         retry:
@@ -121,3 +124,35 @@ spec:
           kind: StatefulSet
           jsonPointers:
             - /spec/replicas
+        # Elasticsearch Secrets: ArgoCD creates them if missing, then never changes them.
+        # The chart regenerates them on every render (randAlphaNum / genCA; helm template has
+        # no lookup), and ES keeps the real elastic password in its .security index, so
+        # overwriting them breaks auth/TLS. elasticsearch-master-certs is rendered by both the
+        # master and data apps (labels differ per app), so labels are ignored too.
+        - kind: Secret
+          name: elasticsearch-master-credentials
+          namespace: es-cluster
+          jsonPointers:
+            - /data
+            - /stringData
+            - /type
+            - /metadata/labels
+            - /metadata/annotations
+        - kind: Secret
+          name: elasticsearch-data-credentials
+          namespace: es-cluster
+          jsonPointers:
+            - /data
+            - /stringData
+            - /type
+            - /metadata/labels
+            - /metadata/annotations
+        - kind: Secret
+          name: elasticsearch-master-certs
+          namespace: es-cluster
+          jsonPointers:
+            - /data
+            - /stringData
+            - /type
+            - /metadata/labels
+            - /metadata/annotations
