@@ -108,7 +108,7 @@ console:
 transformer:
   image:
     repository: egovio/transformer
-    tag: customize-2.1-transformer-mh-09e0536
+    tag: customize-2.1-transformer-mh-fc1b771
   save-project-task-topic: liberia-save-project-task-topic
   update-project-task-topic: liberia-update-project-task-topic
   transformer-producer-bulk-project-task-index-v1-topic: liberia-transformer-producer-bulk-project-task-index-v1-topic
