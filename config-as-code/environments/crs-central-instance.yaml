@@ -360,7 +360,7 @@ egov-user:
   citizen-otp-enabled: 'true'
   employee-otp-enabled: 'false'
   access-token-validity: 22000
-  refresh-token-validity: 20160
+  refresh-token-validity: 24160
   default-password-expiry: 90
   mobile-number-validation: 'false'
   roles-state-level: 'true'
@@ -373,6 +373,7 @@ egov-user:
   egov-user-session-single-active-enabled: 'true'
   egov-user-session-last.contact-interval-seconds: '60'
   egov-user-session-inactivity-period-days: '29'
+  bulk-bcrypt-threads: '3'
   replicas: 2
   hpa:
     enabled: true
@@ -786,14 +787,17 @@ egov-workflow-v2:
 egov-hrms:
   image:
     repository: egovio/egov-hrms
-    tag: sierraleone-changes-f01d8c0
+    tag: customize-2.1-hrms-88d374c
   initContainers:
     dbMigration:
       image:
         repository: egov-hrms-db
-        tag: sierraleone-changes-f01d8c0
+        tag: customize-2.1-hrms-88d374c
   java-args: -Dspring.profiles.active=monitoring
   employee-applink: https://liberia-hcm.digit.org/digit-ui/employee/login
+  parent-level-tenant-id: liberia
+  egov-hrms-mobile-number-min-length: '8'
+  egov-hrms-mobile-number-max-length: '11'
   replicas: 4
   heap: -Xmx512m -Xms256m
   memory_limits: 1Gi
@@ -1049,10 +1053,10 @@ project-factory:
     dbMigration:
       image:
         repository: project-factory-db
-        tag: nigeria-go-deep-2-bf6b8e3
+        tag: master-32ff216
   image:
     repository: egovio/project-factory
-    tag: nigeria-go-deep-2-bf6b8e3
+    tag: master-32ff216
   groupId: egov-project-factory
   ingress:
     name: egov-project-factory
@@ -1103,13 +1107,16 @@ project-factory:
   serverTimezone: UTC
   attendanceAttendeeSearchPageSize: '100'
   attendanceStaffSearchPageSize: '100'
+  attendanceAttendeeUpdateTopic: update-attendee
+  attendanceStaffUpdateTopic: update-staff
+  attendanceRegisterDeleteTopic: delete-attendance
   centralInstanceTenantIds: liberia
   command: |
     - sh
     - -c
   args: |
     - |
-      sed -i 's/--max-old-space-size=2496/--max-old-space-size=2048/g' package.json
+      sed -i 's/--max-old-space-size=3072/--max-old-space-size=2048/g' package.json
       yarn prod
   replicas: 4
   heap: -Xmx2048m -Xms512m
@@ -1125,12 +1132,12 @@ project-factory:
 boundary-management:
   image:
     repository: egovio/boundary-management
-    tag: bm-fix-37047da
+    tag: master-b912a1c
   initContainers:
     dbMigration:
       image:
         repository: boundary-management-db
-        tag: bm-fix-37047da
+        tag: master-b912a1c
   DEBUG: 'true'
   logLevel: debug
   defaultLocale: en_LIBERIA
@@ -1207,10 +1214,10 @@ excel-ingestion:
     dbMigration:
       image:
         repository: excel-ingestion-db
-        tag: nigeria-go-deep-2-0248b5f
+        tag: master-d673cfa
   image:
     repository: egovio/excel-ingestion
-    tag: nigeria-go-deep-2-0248b5f
+    tag: master-d673cfa
   group-id: egov-excel-ingestion
   excel-row-limit: '20000'
   egov-mdms-service-host-key: mdms-v2

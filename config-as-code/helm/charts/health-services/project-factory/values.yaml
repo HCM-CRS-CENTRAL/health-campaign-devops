@@ -279,7 +279,7 @@ env: |
     - name: USER_TAB_NAME
       value: "HCM_ADMIN_CONSOLE_USER_LIST"
     - name: LOCALE
-      value: {{ .Values.defaultLocale | default "en_MZ" }}
+      value: {{ .Values.defaultLocale | default "en_LIBERIA" }}
     - name: MODULE_NAME
       value: "HCM-ADMIN-CONSOLE"
     - name: FORM_CONFIG_TEMPLATE_NAME
@@ -448,6 +448,12 @@ env: |
       value: {{ .Values.attendanceAttendeeSearchPath | default "attendance/attendee/v1/_search" }}
     - name: ATTENDANCE_STAFF_SEARCH_PATH
       value: {{ .Values.attendanceStaffSearchPath | default "attendance/staff/v1/_search" }}
+    - name: KAFKA_ATTENDANCE_ATTENDEE_UPDATE_TOPIC
+      value: {{ .Values.attendanceAttendeeUpdateTopic | default "update-attendee-health" | quote }}
+    - name: KAFKA_ATTENDANCE_STAFF_UPDATE_TOPIC
+      value: {{ .Values.attendanceStaffUpdateTopic | default "update-staff-health" | quote }}
+    - name: KAFKA_ATTENDANCE_REGISTER_DELETE_TOPIC
+      value: {{ .Values.attendanceRegisterDeleteTopic | default "delete-attendance-health" | quote }}
     - name: SERVER_TIMEZONE
       value: {{ .Values.serverTimezone | default "UTC" }}
     - name: KAFKA_CONSUMER_TOPIC_PREFIX
@@ -459,7 +465,7 @@ env: |
     - name: PHONE_NUMBER_LENGTH
       value: {{ .Values.phoneNumberLength | default "11" | quote }}
     - name: HRMS_PARALLEL_SEARCH_LIMIT
-      value: {{ .Values.hrmsParallelSearchLimit | default "10" | quote }}
+      value: {{ .Values.hrmsParallelSearchLimit | default "100" | quote }}
     - name: APP_PORT
       value: {{ .Values.appPort | default "8080" | quote }}
     - name: EGOV_LOCALIZATION_SEARCH
@@ -491,9 +497,9 @@ env: |
     - name: KAFKA_CONSUMER_MAX_CONCURRENT
       value: {{ .Values.kafkaConsumerMaxConcurrent | default "5" | quote }}
     - name: USER_KAFKA_CREATE_BATCH_SIZE
-      value: {{ .Values.userKafkaCreateBatchSize | default "20" | quote }}
+      value: {{ .Values.userKafkaCreateBatchSize | default "100" | quote }}
     - name: USER_CREATION_BATCH_SIZE
-      value: {{ .Values.userCreationBatchSize | default "20" | quote }}
+      value: {{ .Values.userCreationBatchSize | default "100" | quote }}
     - name: USER_PERSIST_BATCH_SIZE
       value: {{ .Values.userPersistBatchSize | default "20" | quote }}
     - name: PROJECT_CREATION_BATCH_SIZE
