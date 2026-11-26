@@ -473,13 +473,13 @@ airflow-trigger-service:
 audit-service:
   image:
     repository: egovio/audit-service
-    tag: DIGIT-2.9-LTS-07f47790b8-12
-  persist-yml-path: /work-dir/health-campaign-config/egov-persister/liberia/egov-workflow-v2-persister.yml,/work-dir/health-campaign-config/egov-persister/liberia/facility-persister.yml,/work-dir/health-campaign-config/egov-persister/liberia/hcm-moz-impl-persister.yml,/work-dir/health-campaign-config/egov-persister/liberia/household-persister.yml,/work-dir/health-campaign-config/egov-persister/liberia/hrms-employee-persister.yml,/work-dir/health-campaign-config/egov-persister/liberia/individual-persister.yml,/work-dir/health-campaign-config/egov-persister/liberia/stock-persister.yml,/work-dir/health-campaign-config/egov-persister/liberia/service-request-persister.yml,/work-dir/health-campaign-config/egov-persister/liberia/project-task-persister.yml,/work-dir/health-campaign-config/egov-persister/liberia/project-persister.yml
+    tag: master-1e8d2bb
+  persist-yml-path: file:///work-dir/health-campaign-config/egov-persister/liberia/egov-workflow-v2-persister.yml,file:///work-dir/health-campaign-config/egov-persister/liberia/facility-persister.yml,file:///work-dir/health-campaign-config/egov-persister/liberia/hcm-moz-impl-persister.yml,file:///work-dir/health-campaign-config/egov-persister/liberia/household-persister.yml,file:///work-dir/health-campaign-config/egov-persister/liberia/hrms-employee-persister.yml,file:///work-dir/health-campaign-config/egov-persister/liberia/individual-persister.yml,file:///work-dir/health-campaign-config/egov-persister/liberia/stock-persister.yml,file:///work-dir/health-campaign-config/egov-persister/liberia/service-request-persister.yml,file:///work-dir/health-campaign-config/egov-persister/liberia/project-task-persister.yml,file:///work-dir/health-campaign-config/egov-persister/liberia/project-persister.yml
   initContainers:
     dbMigration:
       image:
         repository: audit-service-db
-        tag: DIGIT-2.9-LTS-07f47790b8-12
+        tag: master-1e8d2bb
     gitSync:
       enabled: 'true'
       repo: git@github.com:HCM-CRS-CENTRAL/health-campaign-config
