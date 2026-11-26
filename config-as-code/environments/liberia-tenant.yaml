@@ -189,13 +189,6 @@ transformer:
   transformer-error-topic: liberia-transformer-error-topic
   egov-boundary-hierarchy-types: ADMIN,LIBERIA
   transformer-producer-push-batch-size: '100'
-  transformer-consumer-attendance-enabled: 'false'
-  transformer-consumer-attendance-staff-enabled: 'false'
-  transformer-consumer-attendee-enabled: 'false'
-  transformer-consumer-bill-enabled: 'false'
-  transformer-consumer-billdetail-enabled: 'false'
-  transformer-consumer-billreport-enabled: 'false'
-  transformer-consumer-musterroll-enabled: 'false'
   transformer-consumer-side-effect-enabled: 'false'
   hcm-bednets-required-calculate: 'true'
   project-factory-host: project-factory
