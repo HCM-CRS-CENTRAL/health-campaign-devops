@@ -96,6 +96,13 @@ env: |
     value: "/mdms-v2/v1/_search"
   - name: MDMS_PATH
     value: "/mdms-v2/v1/_search"
+  - name: EGOV_MDMS_V2_HOST
+    valueFrom:
+      configMapKeyRef:
+        name: egov-service-host
+        key: mdms-v2
+  - name: EGOV_MDMS_V2_SEARCH_ENDPOINT
+    value: "/mdms-v2/v2/_search"
   - name: EGOV_ENC_HOST
     valueFrom:
       configMapKeyRef:
@@ -191,6 +198,8 @@ env: |
     value: "false" 
   - name: EGOV_USER_PWD_PATTERN
     value: ((?=.*\d)(?=.*[a-z])(?=.*[@#$%])(?=\S+$).*$)
+  - name: EGOV_USER_BULK_BCRYPT_THREADS
+    value: {{ index .Values "bulk-bcrypt-threads" | default "3" | quote }}
   - name: EGOV_USER_SESSION_SINGLE_ACTIVE_TENANTS
     value: {{ index .Values "egov-user-session-single-active-tenants" | quote }}
   - name: EGOV_USER_SESSION_SINGLE_ACTIVE_ENABLED

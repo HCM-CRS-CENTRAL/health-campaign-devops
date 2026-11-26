@@ -32,6 +32,18 @@ employee-applink: "https://egov-micro-dev.egovernments.org/employee/user/login"
 heap: "-Xmx192m -Xms192m"
 java-args: "-Dspring.profiles.active=monitoring"
 
+egov-hrms-default-pagination-limit: "200"
+egov-hrms-default-pwd-length: "8"
+open-search-enabled-roles: "SUPERUSER"
+egov-pwd-allowed-special-characters: "@#$%"
+decryption-abac-enable: "false"
+notification-email-enabled: "true"
+parent-level-tenant-id: "pb"
+egov-user-create-bulk-endpoint: "/user/users/v2/_create"
+egov-individual-create-bulk-endpoint: "/individual/v1/bulk/_create"
+egov-hrms-mobile-number-min-length: "8"
+egov-hrms-mobile-number-max-length: "11"
+
 # Additional Container Envs
 env: |
   - name: EGOV_SERVICES_DATA_SYNC_EMPLOYEE_REQUIRED 
@@ -153,4 +165,33 @@ env: |
         key: boundary-hierarchy
   - name: EGOV_HRMS_USER_SERVICE_QUALIFIER
     value: "individualService"
+  - name: SPRING_DATA_REDIS_HOST
+    valueFrom:
+      configMapKeyRef:
+        name: egov-config
+        key: redis-host
+  - name: SPRING_DATA_REDIS_PORT
+    value: "6379"
+  - name: EGOV_HRMS_DEFAULT_PAGINATION_LIMIT
+    value: {{ index .Values "egov-hrms-default-pagination-limit" | quote }}
+  - name: EGOV_HRMS_DEFAULT_PWD_LENGTH
+    value: {{ index .Values "egov-hrms-default-pwd-length" | quote }}
+  - name: OPEN_SEARCH_ENABLED_ROLES
+    value: {{ index .Values "open-search-enabled-roles" | quote }}
+  - name: EGOV_PWD_ALLOWED_SPECIAL_CHARACTERS
+    value: {{ index .Values "egov-pwd-allowed-special-characters" | quote }}
+  - name: DECRYPTION_ABAC_ENABLE
+    value: {{ index .Values "decryption-abac-enable" | quote }}
+  - name: NOTIFICATION_EMAIL_ENABLED
+    value: {{ index .Values "notification-email-enabled" | quote }}
+  - name: PARENT_LEVEL_TENANT_ID
+    value: {{ index .Values "parent-level-tenant-id" | quote }}
+  - name: EGOV_USER_CREATE_BULK_ENDPOINT
+    value: {{ index .Values "egov-user-create-bulk-endpoint" | quote }}
+  - name: EGOV_INDIVIDUAL_CREATE_BULK_ENDPOINT
+    value: {{ index .Values "egov-individual-create-bulk-endpoint" | quote }}
+  - name: EGOV_HRMS_MOBILE_NUMBER_MIN_LENGTH
+    value: {{ index .Values "egov-hrms-mobile-number-min-length" | quote }}
+  - name: EGOV_HRMS_MOBILE_NUMBER_MAX_LENGTH
+    value: {{ index .Values "egov-hrms-mobile-number-max-length" | quote }}
 

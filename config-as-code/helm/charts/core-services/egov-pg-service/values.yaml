@@ -101,7 +101,7 @@ env: |
   - name: AXIS_MERCHANT_VPC_COMMAND_STATUS
     value: "queryDR"
   - name: AXIS_LOCALE
-    value: "en_IN"
+    value: "en_LIBERIA"
   - name: AXIS_URL_DEBIT
     value: "https://migs.mastercard.co.in/vpcpay"
   - name: AXIS_URL_STATUS
