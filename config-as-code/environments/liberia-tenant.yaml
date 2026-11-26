@@ -28,7 +28,7 @@ workbench-ui:
 dashboard-ui:
   image:
     repository: egovio/dashboard-ui
-    tag: HDDF-4931-80af5c0
+    tag: HDDF-4931-maps-6b2aba4
   ingress:
     rateLimitEnabled: 'false'
   custom-js-injection: |
