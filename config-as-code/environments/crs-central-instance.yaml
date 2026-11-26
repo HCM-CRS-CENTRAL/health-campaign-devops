@@ -1289,7 +1289,7 @@ egov-notification-push:
       image:
         repository: egov-notification-push-db
         tag: nigeria-go-deep-push-notification-batch-559f031
-  replicas: 1
+  replicas: 0
   heap: -Xmx1296m -Xms1024m
   memory_limits: 2Gi
   memory_requests: 1.5Gi
