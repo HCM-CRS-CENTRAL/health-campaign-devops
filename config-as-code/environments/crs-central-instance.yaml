@@ -572,7 +572,7 @@ egov-searcher:
 dashboard-analytics:
   image:
     repository: egovio/dashboard-analytics
-    tag: analytics-raw-response-transform-5f98d99
+    tag: analytics-raw-response-transform-6574c7a
   healthChecks:
     enabled: true
     livenessProbePath: /dashboard-analytics/health
@@ -594,7 +594,10 @@ dashboard-analytics:
   cpu_limits: 300m
   cpu_requests: 200m
   namespace: egov
-is-central-instance: "false"
+  is-central-instance: "true"
+  central-instance-tenants: "liberia"
+  central-instance-base-path: "file:///work-dir/health-campaign-config/egov-dss-dashboards"
+
 
 dashboard-ingest:
   image:
